@@ -7,7 +7,10 @@
 
 https://github.com/dev-banana/detection_contour.git
 
+
 ______________________
+______________________
+
 
 GUI
 ------
@@ -16,6 +19,7 @@ Pour compiler [et lancer] en mode Graphique (par défaut) :
 	make [run]
 
 ______________________
+
 
 CLI
 ------
@@ -32,6 +36,7 @@ Pour compiler [et lancer] en mode Console :
 --> choisir les nouvelles valeurs parmis celles en commentaires dans le constructeur de la classe Option.
 
 ______________________
+
 
 LIBS
 ------
