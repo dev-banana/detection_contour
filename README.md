@@ -12,7 +12,7 @@ ______________________
 ______________________
 
 
-GUI
+GUI - *mode graphique*
 ------
 Pour compiler [et lancer] en mode Graphique (par défaut) :
 
@@ -21,7 +21,7 @@ Pour compiler [et lancer] en mode Graphique (par défaut) :
 ______________________
 
 
-CLI
+CLI - *mode console*
 ------
 Pour compiler [et lancer] en mode Console :
 ( si probleme de compatibilité avec glib/gtk )
@@ -33,7 +33,7 @@ Pour compiler [et lancer] en mode Console :
 
 	src/cli/option.cpp  
 
---> choisir les nouvelles valeurs parmis celles en commentaires dans le constructeur de la classe Option.
+*choisir les nouvelles valeurs parmis celles en commentaires dans le constructeur de la classe Option.*
 
 ______________________
 
