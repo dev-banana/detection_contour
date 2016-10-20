@@ -3,18 +3,23 @@
 
 Option::Option()
 { 
-	force_color = false ;
-	direction = BI_DIRECTIONNEL ;
-	seuil = HYSTERESIS ;
+  lissage_type = GAUSSIEN ;
+  lissage_size = 5 ;
+  lissage_sigma = 0.625;
+
+  filtre.prewitt();
+  direction = MULTI_DIRECTIONNEL ;
+
+  seuil = HYSTERESIS_AUTO ;
+  seuil_calcul = MOYENNE ;
   seuil_val = 50 ;
   seuil_fenetre = 15 ;
-	seuil_bas = 44 ;
+  seuil_bas = 44 ;
   seuil_haut = 60 ;
-	show_color = true ;
+  
+  show_color = true ;
   keep_norme = true ;
   affine = true ;
-
-	reset_filtre( 3 );
 }
 
 
@@ -55,12 +60,9 @@ void Option::set_seuil( unsigned int id )
       seuil = e_seuil::LOCAL ;
       break ;
     case 3:
-      seuil = e_seuil::ECART_TYPE ;
-      break ;
-    case 4:
       seuil = e_seuil::HYSTERESIS_AUTO ;
       break ;
-    case 5:
+    case 4:
       seuil = e_seuil::HYSTERESIS ;
       break ;
     default:
@@ -69,74 +71,40 @@ void Option::set_seuil( unsigned int id )
   }
 }
 
-
-void Option::reset_filtre( int size )
+void Option::set_seuil_calcul( unsigned int id )
 {
-	filtre_size = size ;
-	filtre = cv::Mat( size, size, CV_32FC1, 1.0f ) ;
+  switch(id)
+  {
+    case 0:
+      seuil_calcul = e_type_calcul::MOYENNE ;
+      break ;
+    case 1:
+      seuil_calcul = e_type_calcul::MEDIANE ;
+      break ;
+    case 2:
+      seuil_calcul = e_type_calcul::ECART_TYPE ;
+      break ;
+    default:
+      seuil_calcul = e_type_calcul::MOYENNE ;
+      break ;
+  }
 }
 
-void Option::prewitt()
+void Option::set_lissage_type( unsigned int id )
 {
-  filtre.at<float>(0,0) = -1.0 ;
-  filtre.at<float>(1,0) = -1.0 ;
-  filtre.at<float>(2,0) = -1.0 ;
-  filtre.at<float>(0,1) = 0.0 ;
-  filtre.at<float>(1,1) = 0.0 ;
-  filtre.at<float>(2,1) = 0.0 ;
-  filtre.at<float>(0,2) = 1.0 ;
-  filtre.at<float>(1,2) = 1.0 ;
-  filtre.at<float>(2,2) = 1.0 ;
-}
-void Option::sobel()
-{
-  filtre.at<float>(0,0) =  -1 ;
-  filtre.at<float>(1,0) =  -2 ;
-  filtre.at<float>(2,0) =  -1 ;
-  filtre.at<float>(0,1) =  0 ;
-  filtre.at<float>(1,1) =  0 ;
-  filtre.at<float>(2,1) =  0 ;
-  filtre.at<float>(0,2) =  1 ;
-  filtre.at<float>(1,2) =  2 ;
-  filtre.at<float>(2,2) =  1 ;
-}
-void Option::kirsch()
-{
-  filtre.at<float>(0,0) = -3.0 ;
-  filtre.at<float>(1,0) = -3.0 ;
-  filtre.at<float>(2,0) = -3.0 ;
-  filtre.at<float>(0,1) = -3.0 ;
-  filtre.at<float>(1,1) = 0.0 ;
-  filtre.at<float>(2,1) = -3.0 ;
-  filtre.at<float>(0,2) = 5.0 ;
-  filtre.at<float>(1,2) = 5.0 ;
-  filtre.at<float>(2,2) = 5.0 ;
-}
-void Option::filtre_5()
-{
-  filtre.at<float>(0,0) =  -1 ;
-  filtre.at<float>(1,0) =  -2 ;
-  filtre.at<float>(2,0) =  -1 ;
-  filtre.at<float>(3,0) =  -1 ;
-  filtre.at<float>(4,0) =  -1 ;
-  filtre.at<float>(0,1) =  0 ;
-  filtre.at<float>(1,1) =  0 ;
-  filtre.at<float>(2,1) =  0 ;
-  filtre.at<float>(3,1) =  0 ;
-  filtre.at<float>(4,1) =  0 ;
-  filtre.at<float>(0,2) =  1 ;
-  filtre.at<float>(1,2) =  2 ;
-  filtre.at<float>(2,2) =  1 ;
-  filtre.at<float>(3,2) =  1 ;
-  filtre.at<float>(4,2) =  1 ;
-  filtre.at<float>(0,3) =  0 ;
-  filtre.at<float>(1,3) =  0 ;
-  filtre.at<float>(2,3) =  0 ;
-  filtre.at<float>(3,3) =  0 ;
-  filtre.at<float>(4,3) =  0 ;
-  filtre.at<float>(0,4) =  1 ;
-  filtre.at<float>(1,4) =  2 ;
-  filtre.at<float>(2,4) =  1 ;
-  filtre.at<float>(3,4) =  1 ;
-  filtre.at<float>(4,4) =  1 ;
+  switch(id)
+  {
+    case 0:
+      lissage_type = e_type_calcul::MOYENNE ;
+      break ;
+    case 1:
+      lissage_type = e_type_calcul::MEDIANE ;
+      break ;
+    case 2:
+      lissage_type = e_type_calcul::GAUSSIEN ;
+      break ;
+    default:
+      lissage_type = e_type_calcul::MOYENNE ;
+      break ;
+  }
 }

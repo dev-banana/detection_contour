@@ -6,6 +6,8 @@
 #include <cstring>
 #include <opencv2/opencv.hpp>
 
+#include "filtre.hpp"
+
 
 enum e_direction
 {
@@ -32,7 +34,6 @@ enum e_seuil
         UNIQUE=0,
         GLOBAL,
         LOCAL,
-        ECART_TYPE,
         HYSTERESIS_AUTO,
         HYSTERESIS
 } ;
@@ -44,26 +45,56 @@ inline const std::string ToStringSeuil(e_seuil v)
         case UNIQUE:   return "UNIQUE" ;
         case GLOBAL:   return "GLOBAL" ;
         case LOCAL: return "LOCAL" ;
-        case ECART_TYPE: return "ECART_TYPE" ;
         case HYSTERESIS_AUTO: return "HYSTERESIS_AUTO" ;
         case HYSTERESIS: return "HYSTERESIS" ;
         default:      return "[Unknown SEUIL]";
     }
 }
 
+enum e_type_calcul
+{
+        MOYENNE=0,
+        MEDIANE,
+        ECART_TYPE,
+        GAUSSIEN
+} ;
+
+inline const std::string ToStringTypeCalcul(e_type_calcul v)
+{
+    switch (v)
+    {
+        case MOYENNE:   return "MOYENNE" ;
+        case MEDIANE:   return "MEDIANE" ;
+        case ECART_TYPE: return "ECART_TYPE" ;
+        case GAUSSIEN: return "GAUSSIEN" ;
+        default:      return "[Unknown SEUIL CALCUL]";
+    }
+}
+
+/**
+* Classe permettant de passer facilement les options choisies par l'utilisateurs
+* au diverses fonctions de traitement.
+*/
+
 class Option
 {
         private :    
 
         public :
+            
+            Option() ;
+            ~Option(){}
 
-                bool force_color ;
-                cv::Mat filtre ;
-                int filtre_size ;
 
+                e_type_calcul lissage_type ;
+                unsigned int lissage_size ;
+                float lissage_sigma ;
+
+                Filtre filtre ;
                 e_direction direction ;
 
                 e_seuil seuil ;
+                e_type_calcul seuil_calcul ;
                 unsigned int seuil_val ;
                 unsigned int seuil_fenetre ;
                 unsigned int seuil_bas ;
@@ -73,32 +104,26 @@ class Option
                 bool keep_norme ;
                 bool affine ;
 
-                Option() ;
-                ~Option(){}
+                
+            void set_direction( unsigned int ) ;
+            void set_seuil( unsigned int ) ;
+            void set_seuil_calcul( unsigned int ) ;
+            void set_lissage_type( unsigned int ) ;
 
-                void set_direction( unsigned int ) ;
-                void set_seuil( unsigned int ) ;
-
-                void reset_filtre( int ) ;
-                void prewitt() ;
-                void sobel() ;
-                void kirsch() ;
-                void filtre_5() ;
-
-                friend std::ostream& operator<<(std::ostream& out, const Option& r){
-                  return out << "{"<<
-                    "taille_filtre : "<<std::to_string(r.filtre_size)<<"; "<<
-                    "direction : "<<ToStringDir(r.direction)<<"; "<<
-                    "seuillage : "<<ToStringSeuil(r.seuil)<<"; "<<
-                    "val_seuillage : "<<std::to_string(r.seuil_val)<<"; "<<
-                    "fenetre_seuillage : "<<std::to_string(r.seuil_fenetre)<<"; "<<
-                    "seuil_bas : "<<std::to_string(r.seuil_bas)<<"; "<<
-                    "seuil_haut : "<<std::to_string(r.seuil_haut)<<"; "<<
-                    ((r.show_color)?"couleur : oui":"couleur : non")<<"; "<<
-                    ((r.keep_norme)?"color_norme : oui":"color_norme : non")<<"; "<<
-                    ((r.affine)?"affine : oui":"affine : non")<<
-                  "}";
-                }
+            friend std::ostream& operator<<(std::ostream& out, const Option& r){
+              return out << "{"<<
+                // "taille_filtre : "<<std::to_string(r.filtre_size)<<"; "<<
+                // "direction : "<<ToStringDir(r.direction)<<"; "<<
+                // "seuillage : "<<ToStringSeuil(r.seuil)<<"; "<<
+                // "val_seuillage : "<<std::to_string(r.seuil_val)<<"; "<<
+                // "fenetre_seuillage : "<<std::to_string(r.seuil_fenetre)<<"; "<<
+                // "seuil_bas : "<<std::to_string(r.seuil_bas)<<"; "<<
+                // "seuil_haut : "<<std::to_string(r.seuil_haut)<<"; "<<
+                // ((r.show_color)?"couleur : oui":"couleur : non")<<"; "<<
+                // ((r.keep_norme)?"color_norme : oui":"color_norme : non")<<"; "<<
+                // ((r.affine)?"affine : oui":"affine : non")<<
+              "}";
+            }
 } ;
 
 inline const std::string ToStringOption(Option v)

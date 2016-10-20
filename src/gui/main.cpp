@@ -3,11 +3,11 @@
 
 int main (int argc, char *argv[])
 {
-  auto app = Gtk::Application::create(argc, argv);
+	auto app = Gtk::Application::create(argc, argv);
 
-  MainWindow helloworld;
+	MainWindow window;
 
-  app->run(helloworld) ;
+	app->run(window) ;
 
-  return 0 ; 
+	return 0 ; 
 }
