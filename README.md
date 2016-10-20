@@ -14,26 +14,34 @@ ______________________
 
 GUI - *mode graphique*
 ------
-Pour compiler [et lancer] en mode Graphique (par défaut) :
+Pour compiler (par défaut) :
 
-	make [run]
+	make
+
+Pour compiler et lancer le programme :
+
+	make run
 
 ______________________
 
 
 CLI - *mode console*
 ------
-Pour compiler [et lancer] en mode Console :
-( si probleme de compatibilité avec glib/gtk )
-
-	make MODE="CLI" [run]
+*( si probleme de compatibilité avec glib/gtk )*
 
 
-!! En mode console, les options ne sont pas dynamiques mais peuvent être modifiées facilement dans le fichier :
+Pour compiler :
+
+	make MODE="CLI"
+
+Pour compiler et lancer le programme :
+
+	make MODE="CLI" run
+
+
+* En mode console, les options ne sont pas dynamiques mais peuvent être modifiées facilement en choisissant les nouvelles valeurs parmis celles en commentaires dans le constructeur de la classe Option, dans le fichier : *
 
 	src/cli/option.cpp  
-
-*choisir les nouvelles valeurs parmis celles en commentaires dans le constructeur de la classe Option.*
 
 ______________________
 
