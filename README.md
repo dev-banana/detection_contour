@@ -7,6 +7,8 @@ TP1
 
 ANNA BENNETON - FABIEN MAROT
 
+https://github.com/dev-banana/detection_contour.git
+
 -----------------------
 
 
@@ -28,7 +30,9 @@ Pour compiler [et lancer] en mode Console :
 
 
 !! En mode console, les options ne sont pas dynamiques mais peuvent être modifiées facilement dans le fichier :
+
 	src/cli/option.cpp  
+
 --> choisir les nouvelles valeurs parmis celles en commentaires dans le constructeur de la classe Option.
 
 ______________________
@@ -37,7 +41,7 @@ LIBS nécessaires :
 
 	opencv2
 
-//Pour l'interface graphique :
+Pour l'interface graphique :
 
 	glibmm-2.4
 	glib-2.0
