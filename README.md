@@ -5,7 +5,7 @@
 -----------------------
 
 
-ANALYSE D'IMAGE - 2016
+ANALYSE D'IMAGE - octobre 2016
 
 TP1
 
