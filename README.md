@@ -1,9 +1,6 @@
-# detection_contour
-
 -----------------------
-		README
+# 		DETECTION DE CONTOURS
 -----------------------
-
 
 ANALYSE D'IMAGE - octobre 2016
 
