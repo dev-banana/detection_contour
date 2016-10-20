@@ -1,27 +1,23 @@
------------------------
-# 		DETECTION DE CONTOURS
+# DETECTION DE CONTOURS
 
-ANALYSE D'IMAGE - octobre 2016
+## ANALYSE D'IMAGE - TP1
+*octobre 2016*
 
-TP1
-
-ANNA BENNETON - FABIEN MAROT
+###### ANNA BENNETON - FABIEN MAROT
 
 https://github.com/dev-banana/detection_contour.git
 
------------------------
 
 
-------
- GUI
+GUI
 ------
 Pour compiler [et lancer] en mode Graphique (par défaut) :
 
 	make [run]
 
 
-------
- CLI
+
+CLI
 ------
 Pour compiler [et lancer] en mode Console :
 ( si probleme de compatibilité avec glib/gtk )
