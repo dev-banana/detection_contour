@@ -7,7 +7,7 @@
 
 https://github.com/dev-banana/detection_contour.git
 
-
+______________________
 
 GUI
 ------
@@ -15,7 +15,7 @@ Pour compiler [et lancer] en mode Graphique (par défaut) :
 
 	make [run]
 
-
+______________________
 
 CLI
 ------
@@ -33,7 +33,8 @@ Pour compiler [et lancer] en mode Console :
 
 ______________________
 
-LIBS nécessaires :
+LIBS
+------
 
 	opencv2
 
