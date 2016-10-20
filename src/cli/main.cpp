@@ -14,6 +14,8 @@ std::vector<std::pair<std::string, Image>> images ;
 
 Image actu ;
 
+Option option ;
+
 
 int lireInt()
 {
@@ -48,8 +50,13 @@ int menu()
 		"open",
 		"save",
 		"afficher",
-		"filtre moyen",
-		"quit"
+		"lissage",
+		"filtre",
+		"seuillage",
+		"affinage",
+		"fermeture",
+		"coloriser",
+		"QUIT"
 	};
 
 	cout << endl << "MENU :" << endl ;
@@ -142,10 +149,67 @@ int main (int argc, char *argv[])
 				cv::destroyAllWindows() ;
 
 			} break ;
-			case 4 : //filtre_moyen
+			case 4 : //lissage
 			{
+				int chooseFile = files() ;
+
+				std::pair<std::string, Image> pair ;
+				pair.first = images[chooseFile].first + " - lissage " ;
+				pair.second = images[chooseFile].second.lissage( option ) ;
+
+				images.push_back( pair ) ;
 			} break ;
-			case 5 : //quit
+			case 5 : //filtrage
+			{
+				int chooseFile = files() ;
+
+				std::pair<std::string, Image> pair ;
+				pair.first = images[chooseFile].first + " - filtre " ;
+				pair.second = images[chooseFile].second.filtre_differentiel( option ) ;
+
+				images.push_back( pair ) ;
+			} break ;
+			case 6 : //seuillage
+			{
+				int chooseFile = files() ;
+
+				std::pair<std::string, Image> pair ;
+				pair.first = images[chooseFile].first + " - seuillage " ;
+				pair.second = images[chooseFile].second.seuillage( option ) ;
+
+				images.push_back( pair ) ;
+			} break ;
+			case 7 : //affinage
+			{
+				int chooseFile = files() ;
+
+				std::pair<std::string, Image> pair ;
+				pair.first = images[chooseFile].first + " - affinage " ;
+				pair.second = images[chooseFile].second.affinage( option ) ;
+
+				images.push_back( pair ) ;
+			} break ;
+			case 8 : //fermeture
+			{
+				int chooseFile = files() ;
+
+				std::pair<std::string, Image> pair ;
+				pair.first = images[chooseFile].first + " - fermeture " ;
+				pair.second = images[chooseFile].second.fermeture( option ) ;
+
+				images.push_back( pair ) ;
+			} break ;
+			case 9 : //coloriser
+			{
+				int chooseFile = files() ;
+
+				std::pair<std::string, Image> pair ;
+				pair.first = images[chooseFile].first + " - color " ;
+				pair.second = images[chooseFile].second.color_direction( option ) ;
+
+				images.push_back( pair ) ;
+			} break ;
+			case 10 : //quit
 			{
 				return 0 ;
 			} break ;

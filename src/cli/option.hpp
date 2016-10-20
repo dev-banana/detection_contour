@@ -102,7 +102,6 @@ class Option
                 
                 bool show_color ;
                 bool keep_norme ;
-                bool affine ;
 
                 
             void set_direction( unsigned int ) ;
@@ -111,18 +110,21 @@ class Option
             void set_lissage_type( unsigned int ) ;
 
             friend std::ostream& operator<<(std::ostream& out, const Option& r){
-              return out << "{"<<
-                // "taille_filtre : "<<std::to_string(r.filtre_size)<<"; "<<
-                // "direction : "<<ToStringDir(r.direction)<<"; "<<
-                // "seuillage : "<<ToStringSeuil(r.seuil)<<"; "<<
-                // "val_seuillage : "<<std::to_string(r.seuil_val)<<"; "<<
-                // "fenetre_seuillage : "<<std::to_string(r.seuil_fenetre)<<"; "<<
-                // "seuil_bas : "<<std::to_string(r.seuil_bas)<<"; "<<
-                // "seuil_haut : "<<std::to_string(r.seuil_haut)<<"; "<<
-                // ((r.show_color)?"couleur : oui":"couleur : non")<<"; "<<
-                // ((r.keep_norme)?"color_norme : oui":"color_norme : non")<<"; "<<
-                // ((r.affine)?"affine : oui":"affine : non")<<
-              "}";
+              return out << "{ "<<
+                "lissage_type : "<<ToStringTypeCalcul(r.lissage_type)<<"; "<<
+                "lissage_size : "<<std::to_string(r.lissage_size)<<"; "<<
+                "lissage_sigma : "<<std::to_string(r.lissage_sigma)<<"; "<<
+                "filtre : "<<(r.filtre.name)<<"; "<<
+                "direction : "<<ToStringDir(r.direction)<<"; "<<
+                "seuil : "<<ToStringSeuil(r.seuil)<<"; "<<
+                "seuil_calcul : "<<ToStringTypeCalcul(r.seuil_calcul)<<"; "<<
+                "seuil_val : "<<std::to_string(r.seuil_val)<<"; "<<
+                "seuil_fenetre : "<<std::to_string(r.seuil_fenetre)<<"; "<<
+                "seuil_bas : "<<std::to_string(r.seuil_bas)<<"; "<<
+                "seuil_haut : "<<std::to_string(r.seuil_haut)<<"; "<<
+                ((r.show_color)?"couleur : oui":"couleur : non")<<"; "<<
+                ((r.keep_norme)?"color_norme : oui":"color_norme : non")<<
+              " }";
             }
 } ;
 
