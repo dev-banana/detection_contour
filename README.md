@@ -28,19 +28,19 @@ Pour compiler [et lancer] en mode Console :
 
 
 !! En mode console, les options ne sont pas dynamiques mais peuvent être modifiées facilement dans le fichier :
-src/cli/option.cpp  
+	src/cli/option.cpp  
 --> choisir les nouvelles valeurs parmis celles en commentaires dans le constructeur de la classe Option.
 
 ______________________
 
 LIBS nécessaires :
 
-opencv2
+	opencv2
 
 //Pour l'interface graphique :
 
-glibmm-2.4
-glib-2.0
-gtkmm-3.0
-gtk+-3.0
-gdkmm-3.0
+	glibmm-2.4
+	glib-2.0
+	gtkmm-3.0
+	gtk+-3.0
+	gdkmm-3.0
