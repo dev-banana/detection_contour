@@ -39,7 +39,7 @@ Pour compiler et lancer le programme :
 	make MODE="CLI" run
 
 
-* En mode console, les options ne sont pas dynamiques mais peuvent être modifiées facilement en choisissant les nouvelles valeurs parmis celles en commentaires dans le constructeur de la classe Option, dans le fichier : *
+*En mode console, les options ne sont pas dynamiques mais peuvent être modifiées facilement en choisissant les nouvelles valeurs parmis celles en commentaires dans le constructeur de la classe Option, dans le fichier :*
 
 	src/cli/option.cpp  
 
