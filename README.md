@@ -1,6 +1,5 @@
 -----------------------
 # 		DETECTION DE CONTOURS
------------------------
 
 ANALYSE D'IMAGE - octobre 2016
 
@@ -8,7 +7,8 @@ TP1
 
 ANNA BENNETON - FABIEN MAROT
 
-______________________
+-----------------------
+
 
 ------
  GUI
