@@ -99,15 +99,6 @@ void Filtre::mean( unsigned int size )
 	(*this) = Filtre( filtre, "Moyenne" ) ;
 }
 
-void Filtre::median( unsigned int size )
-{
-	cv::Mat filtre = cv::Mat( 3, 3, CV_32FC1, 1.0f ) ;
-// 
-
-	(*this) = Filtre( filtre, "Median" ) ;
-}
-
-
 
 void Filtre::gaussian( unsigned int size, float sigma )
 {

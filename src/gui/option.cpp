@@ -9,6 +9,7 @@ Option::Option()
 
   filtre.prewitt();
   direction = MULTI_DIRECTIONNEL ;
+  type_norme = EUCLIDIENNE ;
 
   seuil = HYSTERESIS ;
   seuil_calcul = MOYENNE ;
@@ -17,8 +18,8 @@ Option::Option()
   seuil_bas = 44 ;
   seuil_haut = 60 ;
 
-  fermeture_size = 5 ;
-  fermeture_seuil = 40 ;
+  fermeture_size = 2 ;
+  fermeture_seuil = 15 ;
   
   show_color = true ;
   keep_norme = true ;
@@ -44,6 +45,25 @@ void Option::set_direction( unsigned int id )
       break ;
     default:
       direction = e_direction::BI_DIRECTIONNEL ;
+      break ;
+  }
+}
+
+void Option::set_type_norme( unsigned int id )
+{
+  switch(id)
+  {
+    case 0:
+      type_norme = e_type_norme::EUCLIDIENNE ;
+      break ;
+    case 1:
+      type_norme = e_type_norme::ABSOLUE ;
+      break ;
+    case 2:
+      type_norme = e_type_norme::MAX ;
+      break ;
+    default:
+      type_norme = e_type_norme::EUCLIDIENNE ;
       break ;
   }
 }

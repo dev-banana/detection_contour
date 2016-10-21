@@ -24,11 +24,10 @@ class Image : public cv::Mat
                 void seuil_hysteresis( const Option ) ;
 
                 Image simple_convolution( const Filtre ) ;
+                Image mediane( int ) ;
 
-                float normes_moyenne( int, int, int, int ) ;
                 float normes_mediane( int, int, int, int ) ;
-                float normes_ecart_type( int, int, int, int ) ;
-
+                void normes_stats( float &, float &, int, int, int, int ) ;
         public :
 
                 std::vector<std::vector<float>> dirs ;

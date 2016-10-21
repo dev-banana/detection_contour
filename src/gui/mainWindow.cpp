@@ -203,6 +203,21 @@ MainWindow::MainWindow()
   filtre_direction.pack_start(m_Columns2.m_col_name);
   tabFiltre.add( filtre_direction ) ;
 
+  m_refTreeModel22 = Gtk::ListStore::create(m_Columns22);
+  filtre_type_norme.set_model(m_refTreeModel22);
+  Gtk::TreeModel::Row row22 = *(m_refTreeModel22->append());
+  row22[m_Columns22.m_col_id] = EUCLIDIENNE;
+  row22[m_Columns22.m_col_name] = "Norme Euclidienne";
+  filtre_type_norme.set_active(row22);
+  row22 = *(m_refTreeModel22->append());
+  row22[m_Columns22.m_col_id] = ABSOLUE;
+  row22[m_Columns22.m_col_name] = "Norme Somme des Absolue";
+  row22 = *(m_refTreeModel22->append());
+  row22[m_Columns22.m_col_id] = MAX;
+  row22[m_Columns22.m_col_name] = "Norme Max";
+  filtre_type_norme.pack_start(m_Columns22.m_col_name);
+  tabFiltre.add( filtre_type_norme ) ;
+
 
   /*******************
     SEUILLAGE
@@ -479,6 +494,7 @@ void MainWindow::initSignals()
   filtreK.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_filtre_kirsch) ) ;
   filtre5.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_filtre_5) ) ;
   filtre_direction.signal_changed().connect( sigc::mem_fun(*this, &MainWindow::on_filtre_direction) ) ;
+  filtre_type_norme.signal_changed().connect( sigc::mem_fun(*this, &MainWindow::on_filtre_type_norme) ) ;
 
   btn_seuillage.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_seuil) ) ;
   seuil_type.signal_changed().connect( sigc::mem_fun(*this, &MainWindow::on_seuil_type) ) ;
@@ -800,6 +816,7 @@ void MainWindow::on_filtre()
   log( "  * filtre : "+option.filtre.name) ;
   log( "  * filtre : \n"+mat) ;
   log( "  * direction : "+ToStringDir(option.direction)) ;
+  log( "  * type_norme : "+ToStringTypeNorme(option.type_norme)) ;
   log("...en cours") ;
   
   Image temp = *actu ;
@@ -856,6 +873,12 @@ void MainWindow::on_filtre_direction()
   option.set_direction( id ) ;
 }
 
+void MainWindow::on_filtre_type_norme()
+{
+  Gtk::TreeModel::iterator iter = filtre_type_norme.get_active() ;
+  int id = (*iter)[m_Columns.m_col_id];
+  option.set_type_norme( id ) ;
+}
 
 /*
 SEUILLAGE
@@ -1024,6 +1047,7 @@ void MainWindow::on_detection()
   log( "  * taille filtre : "+std::to_string(option.filtre.rows)) ;
   log( "  * filtre : "+option.filtre.name) ;
   log( "  * direction : "+ToStringDir(option.direction)) ;
+  log( "  * type_norme : "+ToStringTypeNorme(option.type_norme)) ;
   log( "--Seuillage--");
   log( "  * seuillage : "+ToStringSeuil(option.seuil)) ;
   log( "  * méthode : "+ToStringTypeCalcul(option.seuil_calcul)) ;

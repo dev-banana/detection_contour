@@ -311,6 +311,44 @@ Image Image::simple_convolution( const Filtre filtre )
     return res ;
 }
 
+Image Image::mediane( int size_kernel )
+{
+    Image res = clone() ;
+
+    int sizeTab = size_kernel * size_kernel ;
+
+    for( int i = size_kernel/2; i<rows - size_kernel/2; i++ )
+    {
+        for ( int j=size_kernel/2; j<cols - size_kernel/2; j++ )
+        {
+            
+            std::vector<int> triR(sizeTab) ;
+            std::vector<int> triG(sizeTab) ;
+            std::vector<int> triB(sizeTab) ;
+
+            int n = 0 ;
+            for( int k=-size_kernel/2; k<=size_kernel/2; k++ )
+            {
+                for( int l=-size_kernel/2; l<=size_kernel/2; l++ )
+                {
+                    triR[n] = at<cv::Vec3b>(i+k, j+l)[0] ;
+                    triG[n] = at<cv::Vec3b>(i+k, j+l)[1] ;
+                    triB[n] = at<cv::Vec3b>(i+k, j+l)[2] ;
+                    
+                    n++ ;
+                } 
+            }
+            sort(triR.begin(), triR.end());
+            sort(triG.begin(), triG.end());
+            sort(triB.begin(), triB.end());
+            res.at<cv::Vec3b>(i,j)[0] = triR[ sizeTab/2 ] ;
+            res.at<cv::Vec3b>(i,j)[1] = triG[ sizeTab/2 ] ;
+            res.at<cv::Vec3b>(i,j)[2] = triB[ sizeTab/2 ] ;
+        }
+    }
+
+    return res ;
+}
 
 /*************************************************************
 **************************************************************
@@ -322,25 +360,25 @@ Image Image::simple_convolution( const Filtre filtre )
 
 Image Image::lissage( const Option option )
 {
-
     Filtre filtre ;
+    Image res ;
 
     switch( option.lissage_type )
     {
         case MOYENNE :
             filtre.mean( option.lissage_size ) ;
-            break ;
-        case MEDIANE :
-            filtre.median( option.lissage_size ) ;
+            res = simple_convolution( filtre ) ;
             break ;
         case GAUSSIEN :
             filtre.gaussian( option.lissage_size, option.lissage_sigma ) ;
+            res = simple_convolution( filtre ) ;
+            break ;
+        case MEDIANE :
+            res = mediane( option.lissage_size ) ;
             break ;
         default :
             break ;
     }
-
-    Image res = simple_convolution( filtre ) ;
 
     return res ;
 }
@@ -431,13 +469,28 @@ Image Image::filtre_differentiel( const Option option )
                     dir = 0 ;
                     break ;
                 case BI_DIRECTIONNEL :
-                    norme = sqrt((gradient*gradient)+(gradient1*gradient1)) ;
+                    
+                    switch( option.type_norme )
+                    {
+                        case EUCLIDIENNE : 
+                            norme = sqrt((gradient*gradient)+(gradient1*gradient1)) ;
+                            break ;
+                        case ABSOLUE : 
+                            norme = abs(gradient) + abs(gradient1) ;
+                            break ;
+                        case MAX : 
+                            norme = max( gradient, gradient1 ) ;
+                            break ;
+                        default : 
+                            break ;
+                    }
+
                     angle = atan2( gradient1, gradient ); //return angle radian
                     dir =  angle * (180.0 / M_PI); //degrés
                     dir = (dir > 0.0 ? dir : (360.0 + dir)); // correction
                     break ;
                 case MULTI_DIRECTIONNEL :
-                    norme = std::max( gradient, std::max( gradient1, std::max( gradient2, std::max( gradient3, std::max( gradient4, std::max( gradient5, std::max( gradient6, gradient7 ) ) ) ) ) ) ) ;
+                    norme = max( gradient, max( gradient1, max( gradient2, max( gradient3, max( gradient4, max( gradient5, max( gradient6, gradient7 ) ) ) ) ) ) ) ;
                     if( norme == gradient ) dir = 0*45 ;
                     else if( norme == gradient1 ) dir = 1*45 ;
                     else if( norme == gradient2 ) dir = 2*45 ;
@@ -492,28 +545,6 @@ Image Image::seuillage( const Option option )
 }
 
 
-float Image::normes_moyenne(int xmin, int ymin, int xmax, int ymax )
-{
-    if( xmin < 0 ) xmin = 0 ;
-    if( ymin < 0 ) ymin = 0 ;
-    if( xmax < 0 || xmax >= rows ) xmax = rows ;
-    if( ymax < 0 || ymax >= cols ) ymax = cols ;
-
-    int nb = (xmax-xmin)*(ymax-ymin) ;
-    float sum = 0 ;
-    for (int i = xmin; i < xmax; ++i)
-    {
-        for (int j = ymin; j < ymax; ++j)
-        {
-            sum += normes[i][j] ;
-        }
-    }
-
-    if( nb == 0 ) return 0 ;
-
-    return sum/nb ;
-}
-
 float Image::normes_mediane(int xmin, int ymin, int xmax, int ymax )
 {
     if( xmin < 0 ) xmin = 0 ;
@@ -521,31 +552,52 @@ float Image::normes_mediane(int xmin, int ymin, int xmax, int ymax )
     if( xmax < 0 || xmax >= rows ) xmax = rows ;
     if( ymax < 0 || ymax >= cols ) ymax = cols ;
 
+    int nb = (xmax-xmin)*(ymax-ymin) ;
+    std::vector<int> tri(nb) ;
+
+    int n = 0 ;
+    
     for (int i = xmin; i < xmax; ++i)
     {
         for (int j = ymin; j < ymax; ++j)
         {
-            /* code */
+            tri[n] = normes[i][j] ;
+            n++ ;
         }
-    }
-    return 50 ;
+    }   
+
+    sort(tri.begin(), tri.end());
+        
+    return tri[ nb/2 ] ;
 }
 
-float Image::normes_ecart_type(int xmin, int ymin, int xmax, int ymax )
+void Image::normes_stats(float &moyenne, float &ecart_type, int xmin, int ymin, int xmax, int ymax )
 {
     if( xmin < 0 ) xmin = 0 ;
     if( ymin < 0 ) ymin = 0 ;
     if( xmax < 0 || xmax >= rows ) xmax = rows ;
     if( ymax < 0 || ymax >= cols ) ymax = cols ;
 
+    int nb = (xmax-xmin)*(ymax-ymin) ;
+    if( nb == 0 ) return ;
+
+    int SV = 0 ; // somme des valeurs
+    int SC = 0 ; // somme des carrés
+
     for (int i = xmin; i < xmax; ++i)
     {
         for (int j = ymin; j < ymax; ++j)
         {
-            /* code */
+            int val = normes[i][j] ;
+            SV = SV + val ;
+            SC = SC + val*val ;
         }
     }
-    return 50 ;
+
+    moyenne = SV / nb ;
+    float moyenneCarre = SC / nb ;
+    float variance = moyenneCarre - moyenne*moyenne ;
+    ecart_type = sqrt( variance ) ;
 }
 
 void Image::seuil_unique( Option option )
@@ -573,14 +625,23 @@ void Image::seuil_unique( Option option )
 void Image::seuil_global( Option option )
 {    
     float seuil ;
-    if( option.seuil_calcul == MOYENNE )
-        seuil = normes_moyenne(-1,-1,-1,-1) ;
-    else if( option.seuil_calcul == ECART_TYPE )
-        seuil = normes_ecart_type(-1,-1,-1,-1) ;
+
+    float moyenne, ecart_type ;
+
+    if( option.seuil_calcul == MOYENNE ){
+        normes_stats(moyenne, ecart_type, -1,-1,-1,-1) ;
+        seuil = moyenne ;
+    }
+    else if( option.seuil_calcul == ECART_TYPE ){
+        normes_stats(moyenne, ecart_type, -1,-1,-1,-1) ;
+        seuil = ecart_type ;
+    }
     else if( option.seuil_calcul == MEDIANE )
         seuil = normes_mediane(-1,-1,-1,-1) ;
-    else
-        seuil = normes_moyenne(-1,-1,-1,-1) ;
+    else{
+        normes_stats(moyenne, ecart_type, -1,-1,-1,-1) ;
+        seuil = moyenne ;
+    }
 
     for( int i = 0; i < rows ; i++ )
     {
@@ -609,16 +670,23 @@ void Image::seuil_local( Option option )
     {
         for ( unsigned int j= option.seuil_fenetre/2; j < cols-option.seuil_fenetre/2 ; j++ )
         { 
-
             float seuil ;
-            if( option.seuil_calcul == MOYENNE )
-                seuil = normes_moyenne( i-option.seuil_fenetre/2, j-option.seuil_fenetre/2, i-option.seuil_fenetre/2, j+option.seuil_fenetre/2 ) ;
-            else if( option.seuil_calcul == ECART_TYPE )
-                seuil = normes_ecart_type( i-option.seuil_fenetre/2, j-option.seuil_fenetre/2, i-option.seuil_fenetre/2, j+option.seuil_fenetre/2 ) ;
+            float moyenne, ecart_type ;
+
+            if( option.seuil_calcul == MOYENNE ){
+                normes_stats(moyenne, ecart_type, i-option.seuil_fenetre/2, j-option.seuil_fenetre/2, i+option.seuil_fenetre/2, j+option.seuil_fenetre/2 ) ;
+                seuil = moyenne ;
+            }
+            else if( option.seuil_calcul == ECART_TYPE ){
+                normes_stats(moyenne, ecart_type, i-option.seuil_fenetre/2, j-option.seuil_fenetre/2, i+option.seuil_fenetre/2, j+option.seuil_fenetre/2 ) ;
+                seuil = ecart_type ;
+            }
             else if( option.seuil_calcul == MEDIANE )
-                seuil = normes_mediane( i-option.seuil_fenetre/2, j-option.seuil_fenetre/2, i-option.seuil_fenetre/2, j+option.seuil_fenetre/2 ) ;
-            else
-                seuil = normes_moyenne( i-option.seuil_fenetre/2, j-option.seuil_fenetre/2, i-option.seuil_fenetre/2, j+option.seuil_fenetre/2 ) ;
+                seuil = normes_mediane( i-option.seuil_fenetre/2, j-option.seuil_fenetre/2, i+option.seuil_fenetre/2, j+option.seuil_fenetre/2 ) ;
+            else{
+                normes_stats(moyenne, ecart_type, i-option.seuil_fenetre/2, j-option.seuil_fenetre/2, i+option.seuil_fenetre/2, j+option.seuil_fenetre/2 ) ;
+                seuil = moyenne ;
+            }
             
 
             if( normes[i][j] < seuil )
@@ -646,9 +714,8 @@ void Image::seuil_hysteresis( Option option)
 
     if( option.seuil == HYSTERESIS_AUTO )
     {
-        float moyenne = normes_moyenne(-1,-1,-1,-1) ;
-        float ecart_type = normes_ecart_type(-1,-1,-1,-1) ;
-
+        float moyenne, ecart_type ;
+        normes_stats(moyenne, ecart_type, -1,-1,-1,-1) ;
         bas = moyenne - ecart_type ;
         haut = moyenne + ecart_type ;
     }
@@ -690,7 +757,7 @@ void Image::seuil_hysteresis( Option option)
                 {
                     for ( unsigned int l= j-option.seuil_fenetre/2; l < j+option.seuil_fenetre/2 ; l++ )
                     {
-                        if( normes[k][l] > haut )
+                        if( at<cv::Vec3b>(k,l)[0] > haut ) //si un voisin a deja été validé comme contour
                         {
                             if(option.keep_norme)
                             {
@@ -733,16 +800,16 @@ Image Image::affinage( const Option option )
                 if( dir <= 1*45 )
                 {
                     aI = 0 ;
-                    aJ = -1 ;
+                    aJ = 1 ;
                     bI = 0 ;
-                    bJ = 1 ;
+                    bJ = -1 ;
                 }
                 else if( dir <= 2*45 )
                 {
                     aI = -1;
-                    aJ = -1 ;
+                    aJ = 1 ;
                     bI = 1 ;
-                    bJ = 1 ;
+                    bJ = -1 ;
 
                 }
                 else if( dir <= 3*45 )
@@ -754,38 +821,38 @@ Image Image::affinage( const Option option )
                 }
                 else if( dir <= 4*45 )
                 {
-                    aI = 1 ;
+                    aI = -1 ;
                     aJ = -1 ;
-                    bI = -1 ;
+                    bI = 1 ;
                     bJ = 1 ;
                 }
                 else if( dir <= 5*45 )
                 {
                     aI = 0 ;
-                    aJ = 1 ;
+                    aJ = -1 ;
                     bI = 0 ;
-                    bJ = -1 ;
+                    bJ = 1 ;
                 }
                 else if( dir <= 6*45 )
-                {
-                    aI = 1 ;
-                    aJ = 1 ;
-                    bI = -1 ;
-                    bJ = -1 ;
-                }
-                else if( dir <= 7*45 )
-                {
-                    aI = 0 ;
-                    aJ = 1 ;
-                    bI = 0 ;
-                    bJ = -1 ;
-                }
-                else
                 {
                     aI = 1 ;
                     aJ = -1 ;
                     bI = -1 ;
                     bJ = 1 ;
+                }
+                else if( dir <= 7*45 )
+                {
+                    aI = 1 ;
+                    aJ = 0 ;
+                    bI = -1 ;
+                    bJ = 0 ;
+                }
+                else
+                {
+                    aI = 1 ;
+                    aJ = 1 ;
+                    bI = -1 ;
+                    bJ = -1 ;
                 } 
 
                 if(res.at<cv::Vec3b>(i+aI,j+aJ)[0] != 0 && res.at<cv::Vec3b>(i+bI,j+bJ)[0] != 0)
@@ -836,7 +903,6 @@ Image Image::affinage( const Option option )
                         res.at<cv::Vec3b>(i,j)[2] = 0;
                     }
                 }
-
             }
         }
     }
@@ -845,38 +911,169 @@ Image Image::affinage( const Option option )
 }
 
 
+
 Image Image::fermeture( const Option option )
 {   
-
     Image res = clone() ;
 
-    int compteur = 0 ;
-    // unsigned int size_ext = 0 ;
+    int compteur_voisin = 0 ;
+
     for (int i = 1; i < rows-1; ++i)
     {
         for (int j = 1; j < cols-1; ++j)
         {
-            if( at<cv::Vec3b>(i,j)[0] != 0 )
-            {                
-                compteur = 0 ;
-                for (int k = i-1; k <= i+1; ++k)
+            if( res.at<cv::Vec3b>(i,j)[0] != 0 )
+            {       
+                int x = i ;
+                int y = j ;
+
+                do
                 {
-                    for (int l = j-1; l <= j+1; ++l)
+                    compteur_voisin = 0 ;
+
+                    int voisinI, voisinJ ;
+                    for (int k = x-1; k <= x+1; ++k)
                     {
-                        if( at<cv::Vec3b>(k,l)[0] != 0 )
-                        { 
-                            compteur++ ;
+                        for (int l = y-1; l <= y+1; ++l)
+                        {
+                            if( res.at<cv::Vec3b>(k,l)[0] != 0 && ( k!=x || l!=y ) )
+                            { 
+                                compteur_voisin++ ;
+                                voisinI = k ;
+                                voisinJ = l ;
+                            }
                         }
                     }
-                }
 
-                if(compteur == 1)
-                {
-                    at<cv::Vec3b>(i,j)[0] = 0 ;
-                    at<cv::Vec3b>(i,j)[1] = 0 ;
-                    at<cv::Vec3b>(i,j)[2] = 255 ;
-                }
-                // float dir = dirs[ index ] ;
+                    if(compteur_voisin == 1)
+                    {
+                        int dirI, dirJ ;
+
+                        if( dirs[x][y] <= 1*45 )
+                        {
+                            if( voisinJ > y ){
+                                dirI = 0 ;
+                                dirJ = -1 ;
+                            }else{
+                                dirI = 0 ;
+                                dirJ = 1 ;
+                            }
+                        }
+                        else if( dirs[x][y] <= 2*45 )
+                        {
+                            if( voisinI > x ){
+                                dirI = 1 ;
+                                dirJ = -1 ;
+                            }else{
+                                dirI = -1 ;
+                                dirJ = 1 ;
+                            }
+                        }
+                        else if( dirs[x][y] <= 3*45 )
+                        {
+                            if( voisinI > x ){
+                                dirI = -1 ;
+                                dirJ = 0 ;
+                            }else{
+                                dirI = 1 ;
+                                dirJ = 0 ;
+                            }
+                        }
+                        else if( dirs[x][y] <= 4*45 )
+                        {
+                            if( voisinI > x ){
+                                dirI = -1 ;
+                                dirJ = -1 ;
+                            }else{
+                                dirI = 1 ;
+                                dirJ = 1 ;
+                            }
+                        }
+                        else if( dirs[x][y] <= 5*45 )
+                        {
+                            if( voisinJ > y ){
+                                dirI = 0 ;
+                                dirJ = -1 ;
+                            }else{
+                                dirI = 0 ;
+                                dirJ = 1 ;
+                            }
+                        }
+                        else if( dirs[x][y] <= 6*45 )
+                        {
+                            if( voisinI < x ){
+                                dirI = -1 ;
+                                dirJ = 1 ;
+                            }else{
+                                dirI = 1 ;
+                                dirJ = -1 ;
+                            } 
+                        }
+                        else if( dirs[x][y] <= 7*45 )
+                        {
+                            if( voisinI > x ){
+                                dirI = -1 ;
+                                dirJ = 0 ;
+                            }else{
+                                dirI = 1 ;
+                                dirJ = 0 ;
+                            }
+                        }
+                        else
+                        {
+                            if( voisinI > x ){
+                                dirI = -1 ;
+                                dirJ = -1 ;
+                            }else{
+                                dirI = 1 ;
+                                dirJ = 1 ;
+                            }
+                        } 
+
+                           
+                        bool trouve = false ;
+                        int oldX = x ;
+                        int oldY = y ;
+                        for( unsigned int k =1 ; k<= option.fermeture_size; k++)
+                        {         
+                            int pI = oldX + k*dirI ;
+                            int pJ = oldY + k*dirJ ;
+                            if( pI >=0 && pI < rows && pJ >=0 && pJ<cols)
+                            {    
+                                if( res.at<cv::Vec3b>(pI,pJ)[0] == 0 && normes[pI][pJ] > option.fermeture_seuil && dirs[pI][pJ] == dirs[oldX][oldY] )
+                                {
+
+                                    for( unsigned int m = 1 ; m <= k ; m++)
+                                    {
+                                        int mI = oldX + m*dirI ;
+                                        int mJ = oldY + m*dirJ ; 
+                                        if( option.keep_norme )
+                                        {
+                                            res.at<cv::Vec3b>(mI,mJ)[0] = normes[mI][mJ] ;
+                                            res.at<cv::Vec3b>(mI,mJ)[1] = normes[mI][mJ] ;
+                                            res.at<cv::Vec3b>(mI,mJ)[2] = normes[mI][mJ] ;
+                                        }
+                                        else
+                                        {
+                                            res.at<cv::Vec3b>(mI,mJ)[0] = 255 ;
+                                            res.at<cv::Vec3b>(mI,mJ)[1] = 255 ;
+                                            res.at<cv::Vec3b>(mI,mJ)[2] = 255 ;
+                                        }
+                                    }
+
+                                    trouve = true ;
+                                    
+                                    x = pI ;
+                                    y = pJ ;
+                                }
+                            }
+                        }
+
+                        if( !trouve )
+                            compteur_voisin = 0 ;
+                    }
+
+                } while( compteur_voisin == 1 ) ;
             }
         }
     }
@@ -914,36 +1111,95 @@ Image Image::color_direction( const Option option )
             {                
                 float dir = dirs[i][j] ;
 
-                if( dir <= 90 )
+                if( dir <= 1*45 ) //violet
                 {
-                    if(!option.keep_norme)
-                        res.at<cv::Vec3b>(i,j)[0] = 255 ;
-                    res.at<cv::Vec3b>(i,j)[1] = 0 ;
-                    res.at<cv::Vec3b>(i,j)[2] = 0 ;
-                }
-                else if( dir <= 180 )
-                {
-                    if(!option.keep_norme)
-                        res.at<cv::Vec3b>(i,j)[1] = 255 ;
-                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
-                    res.at<cv::Vec3b>(i,j)[2] = 0 ;
-                }
-                else if( dir <= 270 )
-                {
-                    if(!option.keep_norme)
+                    if( !option.keep_norme )
+                    {
                         res.at<cv::Vec3b>(i,j)[2] = 255 ;
-                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
+                        res.at<cv::Vec3b>(i,j)[0] = 255 ;
+                    }                    
                     res.at<cv::Vec3b>(i,j)[1] = 0 ;
                 }
-                else
+                else if( dir <= 2*45 ) //bleu
                 {
+                    res.at<cv::Vec3b>(i,j)[2] = 0 ;
                     res.at<cv::Vec3b>(i,j)[1] = 0 ;
-                    if(!option.keep_norme){
+                    if( !option.keep_norme )
+                    {
                         res.at<cv::Vec3b>(i,j)[0] = 255 ;
+                    } 
+                }
+                else if( dir <= 3*45 ) //vert
+                {
+                    res.at<cv::Vec3b>(i,j)[2] = 0 ;
+                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
+                    if( !option.keep_norme )
+                    {
+                        res.at<cv::Vec3b>(i,j)[1] = 255 ;
+                    } 
+                }
+                else if( dir <= 4*45 ) //jaune
+                {
+                    if( !option.keep_norme )
+                    {
+                        res.at<cv::Vec3b>(i,j)[2] = 255 ;
+                        res.at<cv::Vec3b>(i,j)[1] = 255 ;
+                    }
+                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
+                }
+                else if( dir <= 5*45 ) //orange
+                {
+                    if( !option.keep_norme )
+                    {
+                        res.at<cv::Vec3b>(i,j)[2] = 255 ;
+                        res.at<cv::Vec3b>(i,j)[1] = 128 ;
+                    }
+                    else
+                    {
+                        res.at<cv::Vec3b>(i,j)[2] = res.at<cv::Vec3b>(i,j)[2] ;
+                        res.at<cv::Vec3b>(i,j)[1] = res.at<cv::Vec3b>(i,j)[1]/2 ;
+                    }
+                    
+                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
+                }
+                else if( dir <= 6*45 ) //rose
+                {
+                    if( !option.keep_norme )
+                    {
+                        res.at<cv::Vec3b>(i,j)[2] = 255 ;
+                        res.at<cv::Vec3b>(i,j)[0] = 128 ;
+                    }
+                    else
+                    {
+                        res.at<cv::Vec3b>(i,j)[2] = res.at<cv::Vec3b>(i,j)[2] ;
+                        res.at<cv::Vec3b>(i,j)[0] = res.at<cv::Vec3b>(i,j)[0]/2 ;
+                    }
+                    res.at<cv::Vec3b>(i,j)[1] = 0 ;
+                    
+                }
+                else if( dir <= 7*45 ) //rouge
+                {
+                    if( !option.keep_norme )
+                    {
                         res.at<cv::Vec3b>(i,j)[2] = 255 ;
                     }
-                }       
-
+                    res.at<cv::Vec3b>(i,j)[1] = 0 ;
+                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
+                }
+                else //marron
+                {
+                    if( !option.keep_norme )
+                    {
+                        res.at<cv::Vec3b>(i,j)[2] = 128 ;
+                        res.at<cv::Vec3b>(i,j)[1] = 64 ;
+                    }
+                    else
+                    {
+                        res.at<cv::Vec3b>(i,j)[2] = res.at<cv::Vec3b>(i,j)[2]/2 ;
+                        res.at<cv::Vec3b>(i,j)[1] = res.at<cv::Vec3b>(i,j)[1]/4 ;
+                    }
+                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
+                }     
             }
         }
     }

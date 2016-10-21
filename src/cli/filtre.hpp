@@ -17,19 +17,18 @@ class Filtre : public cv::Mat
                 Filtre() ;
                 Filtre( const cv::Mat ) ;
                 Filtre( const cv::Mat, const std::string ) ;
-        	~Filtre(){}
+                ~Filtre(){}
 
                 Filtre rotate45() ;
-        	Filtre rotate90() ;
+                Filtre rotate90() ;
 
-        	void prewitt() ;
-        	void sobel() ;
-        	void kirsch() ;
-        	void lapalacien( unsigned int ) ;
+                void prewitt() ;
+                void sobel() ;
+                void kirsch() ;
+                void lapalacien( unsigned int ) ;
 
-        	void mean( unsigned int ) ;
-        	void median( unsigned int ) ;
-        	void gaussian( unsigned int, float ) ;
+                void mean( unsigned int ) ;
+                void gaussian( unsigned int, float ) ;
 } ;
 
 #endif // FILTRE_HPP

@@ -28,7 +28,6 @@ class Filtre : public cv::Mat
         	void lapalacien( unsigned int ) ;
 
         	void mean( unsigned int ) ;
-        	void median( unsigned int ) ;
         	void gaussian( unsigned int, float ) ;
 } ;
 

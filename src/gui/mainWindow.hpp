@@ -125,6 +125,7 @@ protected:
 	Gtk::RadioButton filtreP, filtreS, filtreK, filtre5;
 	Gtk::Label showFiltre ;
 	Gtk::ComboBox filtre_direction ;
+	Gtk::ComboBox filtre_type_norme ;
 
 	//text input { ; ; ; ... } a parser
 	// Gtk::Button applyFiltre ;
@@ -132,6 +133,10 @@ protected:
 	ModelColumns m_Columns2;
 	Gtk::CellRendererText m_cell2;
 	Glib::RefPtr<Gtk::ListStore> m_refTreeModel2;
+
+	ModelColumns m_Columns22;
+	Gtk::CellRendererText m_cell22;
+	Glib::RefPtr<Gtk::ListStore> m_refTreeModel22;
 	/////////////////	
 	void on_filtre() ;
 	void on_filtre_prewitt() ;
@@ -140,6 +145,7 @@ protected:
 	void on_filtre_5() ;
 	void update_show_filtre() ;
 	void on_filtre_direction() ;
+	void on_filtre_type_norme() ;
 
 
 	/*******************

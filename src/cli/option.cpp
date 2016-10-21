@@ -3,19 +3,23 @@
 
 Option::Option()
 { 
-  lissage_type = GAUSSIEN ; //MOYENNE ; MEDIANE ; GAUSSIEN
-  lissage_size = 7 ; //nb impair
+  lissage_type = GAUSSIEN ;
+  lissage_size = 7 ;
   lissage_sigma = 5 ;
 
-  filtre.prewitt(); //prewitt() ; sobel() ; kirsch() ; lapalacien( size ) 
-  direction = MULTI_DIRECTIONNEL ; //HORIZONTAL ; VERTICAL ; BI_DIRECTIONNEL ; MULTI_DIRECTIONNEL
+  filtre.prewitt();
+  direction = MULTI_DIRECTIONNEL ;
+  type_norme = EUCLIDIENNE ;
 
-  seuil = HYSTERESIS_AUTO ; //UNIQUE ; GLOBAL ; LOCAL ; HYSTERESIS_AUTO ; HYSTERESIS
-  seuil_calcul = MOYENNE ; // MOYENNE ; MEDIANE ; ECART_TYPE
+  seuil = HYSTERESIS ;
+  seuil_calcul = MOYENNE ;
   seuil_val = 50 ;
-  seuil_fenetre = 15 ; // nb impair
-  seuil_bas = 44 ; // bas < haut
-  seuil_haut = 60 ; // haut > bas
+  seuil_fenetre = 15 ;
+  seuil_bas = 44 ;
+  seuil_haut = 60 ;
+
+  fermeture_size = 2 ;
+  fermeture_seuil = 15 ;
   
   show_color = true ;
   keep_norme = true ;
@@ -41,6 +45,25 @@ void Option::set_direction( unsigned int id )
       break ;
     default:
       direction = e_direction::BI_DIRECTIONNEL ;
+      break ;
+  }
+}
+
+void Option::set_type_norme( unsigned int id )
+{
+  switch(id)
+  {
+    case 0:
+      type_norme = e_type_norme::EUCLIDIENNE ;
+      break ;
+    case 1:
+      type_norme = e_type_norme::ABSOLUE ;
+      break ;
+    case 2:
+      type_norme = e_type_norme::MAX ;
+      break ;
+    default:
+      type_norme = e_type_norme::EUCLIDIENNE ;
       break ;
   }
 }

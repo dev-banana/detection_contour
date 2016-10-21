@@ -71,6 +71,25 @@ inline const std::string ToStringTypeCalcul(e_type_calcul v)
     }
 }
 
+
+enum e_type_norme
+{
+        EUCLIDIENNE=0,
+        ABSOLUE,
+        MAX
+} ;
+
+inline const std::string ToStringTypeNorme(e_type_norme v)
+{
+    switch (v)
+    {
+        case EUCLIDIENNE:   return "EUCLIDIENNE" ;
+        case ABSOLUE:   return "ABSOLUE" ;
+        case MAX: return "MAX" ;
+        default:      return "[Unknown TYPE NORME]";
+    }
+}
+
 /**
 * Classe permettant de passer facilement les options choisies par l'utilisateurs
 * au diverses fonctions de traitement.
@@ -92,6 +111,7 @@ class Option
 
                 Filtre filtre ;
                 e_direction direction ;
+                e_type_norme type_norme ;
 
                 e_seuil seuil ;
                 e_type_calcul seuil_calcul ;
@@ -108,6 +128,7 @@ class Option
 
                 
             void set_direction( unsigned int ) ;
+            void set_type_norme( unsigned int ) ;
             void set_seuil( unsigned int ) ;
             void set_seuil_calcul( unsigned int ) ;
             void set_lissage_type( unsigned int ) ;
@@ -119,6 +140,7 @@ class Option
                 "lissage_sigma : "<<std::to_string(r.lissage_sigma)<<"; "<<
                 "filtre : "<<(r.filtre.name)<<"; "<<
                 "direction : "<<ToStringDir(r.direction)<<"; "<<
+                "type_norme : "<<ToStringTypeNorme(r.type_norme)<<"; "<<
                 "seuil : "<<ToStringSeuil(r.seuil)<<"; "<<
                 "seuil_calcul : "<<ToStringTypeCalcul(r.seuil_calcul)<<"; "<<
                 "seuil_val : "<<std::to_string(r.seuil_val)<<"; "<<
