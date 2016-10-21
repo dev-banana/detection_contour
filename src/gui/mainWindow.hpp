@@ -181,8 +181,11 @@ protected:
 
 	Gtk::Button fermeture ;
 	Gtk::VButtonBox tabFermeture ;
+	Gtk::SpinButton fermeture_size, fermeture_seuil ;
 	/////////////////	
 	void on_fermeture() ;
+	void on_fermeture_size() ;
+	void on_fermeture_seuil() ;
 
 
 	/*******************

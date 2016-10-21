@@ -722,7 +722,7 @@ void Image::seuil_hysteresis( Option option)
                 {
                     for ( unsigned int l= j-option.seuil_fenetre/2; l < j+option.seuil_fenetre/2 ; l++ )
                     {
-                        if( normes[k][l] > haut )
+                        if( at<cv::Vec3b>(k,l)[0] > haut ) //si un voisin a deja été validé comme contour
                         {
                             if(option.keep_norme)
                             {
@@ -748,6 +748,7 @@ void Image::seuil_hysteresis( Option option)
 }
 
 
+// a mieux faire !! // -> décaler les angles 
 Image Image::affinage( const Option option )
 {   
     Image res = clone() ;
@@ -869,6 +870,56 @@ Image Image::affinage( const Option option )
                     }
                 }
 
+                //pour montrer l'affinage
+                // if(res.at<cv::Vec3b>(i+aI,j+aJ)[0] != 0 && res.at<cv::Vec3b>(i+bI,j+bJ)[0] != 0)
+                // {
+                //     if(res.at<cv::Vec3b>(i,j)[0] >= res.at<cv::Vec3b>(i+aI,j+aJ)[0] && res.at<cv::Vec3b>(i,j)[0] > res.at<cv::Vec3b>(i+bI,j+bJ)[0])
+                //     {
+                //         res.at<cv::Vec3b>(i+aI,j+aJ)[0] = 0;
+                //         res.at<cv::Vec3b>(i+aI,j+aJ)[1] = 255;
+                //         res.at<cv::Vec3b>(i+aI,j+aJ)[2] = 255;
+                //         res.at<cv::Vec3b>(i+bI,j+bJ)[0] = 0;
+                //         res.at<cv::Vec3b>(i+bI,j+bJ)[1] = 255;
+                //         res.at<cv::Vec3b>(i+bI,j+bJ)[2] = 255;
+                //     }
+                //     else
+                //     {
+                //         res.at<cv::Vec3b>(i,j)[0] = 0;
+                //         res.at<cv::Vec3b>(i,j)[1] = 255;
+                //         res.at<cv::Vec3b>(i,j)[2] = 255;
+                //     }
+                // }
+                // else if(res.at<cv::Vec3b>(i+aI,j+aJ)[0] != 0)
+                // {
+                //     if(res.at<cv::Vec3b>(i,j)[0] > res.at<cv::Vec3b>(i+aI,j+aJ)[0])
+                //     {
+                //         res.at<cv::Vec3b>(i+aI,j+aJ)[0] = 255;
+                //         res.at<cv::Vec3b>(i+aI,j+aJ)[1] = 0;
+                //         res.at<cv::Vec3b>(i+aI,j+aJ)[2] = 255;
+                //     }
+                //     else
+                //     {
+                //         res.at<cv::Vec3b>(i,j)[0] = 255;
+                //         res.at<cv::Vec3b>(i,j)[1] = 0;
+                //         res.at<cv::Vec3b>(i,j)[2] = 255;
+                //     }
+                // }
+                // else if(res.at<cv::Vec3b>(i+bI,j+bJ)[0] != 0)
+                // {
+                //     if(res.at<cv::Vec3b>(i,j)[0] > res.at<cv::Vec3b>(i+bI,j+bJ)[0])
+                //     {
+                //         res.at<cv::Vec3b>(i+bI,j+bJ)[0] = 255;
+                //         res.at<cv::Vec3b>(i+bI,j+bJ)[1] = 255;
+                //         res.at<cv::Vec3b>(i+bI,j+bJ)[2] = 0;
+                //     }
+                //     else
+                //     {
+                //         res.at<cv::Vec3b>(i,j)[0] = 255;
+                //         res.at<cv::Vec3b>(i,j)[1] = 255;
+                //         res.at<cv::Vec3b>(i,j)[2] = 0;
+                //     }
+                // }
+
             }
         }
     }
@@ -877,38 +928,127 @@ Image Image::affinage( const Option option )
 }
 
 
+/*
+Algo
+
+Pour chaque extrémité d'une portion de contour:
+on examine ses voisins qui se situent dans la direction locale du gradient.
+Parmis ces voisins, celui qui possede une orientation similaire au point courant
+et une norme/amplitude de gradient superieur au seuil B (B inferieur au seuil A de seuillage )
+est ajouté à la chaine de contours. on reprend a partir de ce nouveau point.
+
+La méthode de recherche d'extrémité par du postulat que les contours sont affinés et d'épaisseur 1.
+*/
 Image Image::fermeture( const Option option )
 {   
-
     Image res = clone() ;
 
-    int compteur = 0 ;
-    // unsigned int size_ext = 0 ;
+    int compteur_voisin = 0 ;
+
     for (int i = 1; i < rows-1; ++i)
     {
         for (int j = 1; j < cols-1; ++j)
         {
-            if( at<cv::Vec3b>(i,j)[0] != 0 )
-            {                
-                compteur = 0 ;
-                for (int k = i-1; k <= i+1; ++k)
+            if( res.at<cv::Vec3b>(i,j)[0] != 0 )
+            {       
+                int x = i ;
+                int y = j ;
+
+                do
                 {
-                    for (int l = j-1; l <= j+1; ++l)
+                    compteur_voisin = 0 ;
+
+                    for (int k = x-1; k <= x+1; ++k)
                     {
-                        if( at<cv::Vec3b>(k,l)[0] != 0 )
-                        { 
-                            compteur++ ;
+                        for (int l = y-1; l <= y+1; ++l)
+                        {
+                            if( res.at<cv::Vec3b>(k,l)[0] != 0 )
+                            { 
+                                compteur_voisin++ ;
+                            }
                         }
                     }
-                }
 
-                if(compteur == 1)
-                {
-                    at<cv::Vec3b>(i,j)[0] = 0 ;
-                    at<cv::Vec3b>(i,j)[1] = 0 ;
-                    at<cv::Vec3b>(i,j)[2] = 255 ;
-                }
-                // float dir = dirs[ index ] ;
+                    if(compteur_voisin == 1)
+                    {
+                        int dirI, dirJ ;
+                        if( dirs[i][j] <= 1*45 )
+                        {
+                            dirI = 0 ;
+                            dirJ = -1 ;
+                        }
+                        else if( dirs[i][j] <= 2*45 )
+                        {
+                            dirI = 1 ;
+                            dirJ = -1 ;
+                        }
+                        else if( dirs[i][j] <= 3*45 )
+                        {
+                            dirI = 1 ;
+                            dirJ = 0 ;
+                        }
+                        else if( dirs[i][j] <= 4*45 )
+                        {
+                            dirI = 1 ;
+                            dirJ = 1 ;
+                        }
+                        else if( dirs[i][j] <= 5*45 )
+                        {
+                            dirI = 0 ;
+                            dirJ = 1 ;
+                        }
+                        else if( dirs[i][j] <= 6*45 )
+                        {
+                            dirI = -1;
+                            dirJ = 1 ;
+                        }
+                        else if( dirs[i][j] <= 7*45 )
+                        {
+                            dirI = -1 ;
+                            dirJ = 0 ;
+                        }
+                        else
+                        {
+                            dirI = -1 ;
+                            dirJ = -1 ;
+                        } 
+
+                            
+                        bool trouve = false ;
+                            
+                        for( unsigned int k = 1 ; k <= option.fermeture_size ; k++ )
+                        {   
+                            int pI = x + k*dirI ;
+                            int pJ = y + k*dirJ ;
+
+                            if( pI >=0 && pI < rows && pJ >=0 && pJ<cols){    
+                                if( normes[pI][pJ] > option.fermeture_seuil && dirs[pI][pJ] == dirs[x][y] )
+                                {
+                                    if( option.keep_norme )
+                                    {
+                                        res.at<cv::Vec3b>(pI,pJ)[0] = normes[pI][pJ] ;
+                                        res.at<cv::Vec3b>(pI,pJ)[1] = normes[pI][pJ] ;
+                                        res.at<cv::Vec3b>(pI,pJ)[2] = normes[pI][pJ] ;
+                                    }
+                                    else
+                                    {
+                                        res.at<cv::Vec3b>(pI,pJ)[0] = 255 ;
+                                        res.at<cv::Vec3b>(pI,pJ)[1] = 255 ;
+                                        res.at<cv::Vec3b>(pI,pJ)[2] = 255 ;
+                                    }
+
+                                    trouve = true ;
+                                    x = pI ;
+                                    y = pJ ;
+                                }
+                            }
+                        }
+
+                        if( !trouve )
+                            compteur_voisin = 0 ;
+                    }
+
+                } while( compteur_voisin == 1 ) ;
             }
         }
     }

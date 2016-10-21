@@ -7,8 +7,6 @@ else
 endif
 
 
-# MODE = "CLI" 
-
 PROGRAM = tp1
 
 BIN_DIR = bin

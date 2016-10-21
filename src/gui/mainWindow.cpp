@@ -224,10 +224,10 @@ MainWindow::MainWindow()
   row3 = *(m_refTreeModel3->append());
   row3[m_Columns3.m_col_id] = HYSTERESIS_AUTO;
   row3[m_Columns3.m_col_name] = "Seuillage Hysteresis Auto";
-  seuil_type.set_active(row3);
   row3 = *(m_refTreeModel3->append());
   row3[m_Columns3.m_col_id] = HYSTERESIS;
   row3[m_Columns3.m_col_name] = "Seuillage Hysteresis";
+  seuil_type.set_active(row3);
   seuil_type.pack_start(m_Columns3.m_col_name);
   tabSeuillage.add( seuil_type ) ;
 
@@ -253,7 +253,7 @@ MainWindow::MainWindow()
   seuil_fenetre.set_digits(0);
   seuil_fenetre.set_range(3, 99);
   seuil_fenetre.set_increments(2, 2); 
-  seuil_fenetre.set_value(15);  
+  seuil_fenetre.set_value( option.seuil_fenetre );  
   h36.add( seuil_fenetre ) ;
   tabSeuillage.add( h36 ) ;
 
@@ -264,7 +264,7 @@ MainWindow::MainWindow()
   seuil_val.set_digits(0);
   seuil_val.set_range(0, 255);
   seuil_val.set_increments(1, 1); 
-  seuil_val.set_value(50);   
+  seuil_val.set_value( option.seuil_val );   
   h361.add( seuil_val ) ;
   tabSeuillage.add( h361 ) ;
 
@@ -275,7 +275,7 @@ MainWindow::MainWindow()
   seuil_bas.set_digits(0);
   seuil_bas.set_range(0, 255);
   seuil_bas.set_increments(1, 1); 
-  seuil_bas.set_value(44);   
+  seuil_bas.set_value( option.seuil_bas );   
   h362.add( seuil_bas ) ;
   tabSeuillage.add( h362 ) ;
 
@@ -286,7 +286,7 @@ MainWindow::MainWindow()
   seuil_haut.set_digits(0);
   seuil_haut.set_range(0, 255);
   seuil_haut.set_increments(1, 1); 
-  seuil_haut.set_value(60);   
+  seuil_haut.set_value( option.seuil_haut );   
   h363.add( seuil_haut ) ;
   tabSeuillage.add( h363 ) ;
 
@@ -303,6 +303,29 @@ MainWindow::MainWindow()
   *******************/
 
   fermeture.set_label( "Fermeture" ) ;
+
+
+  static Gtk::HButtonBox hFerm ;
+  static Gtk::Label labFermture_size ;
+  labFermture_size.set_markup("<b>distance de recherche</b>");
+  hFerm.add( labFermture_size ) ;
+  fermeture_size.set_digits(0);
+  fermeture_size.set_range(0, 255);
+  fermeture_size.set_increments(1, 1); 
+  fermeture_size.set_value( option.fermeture_size );   
+  hFerm.add( fermeture_size ) ;
+  tabFermeture.add( hFerm ) ;
+
+  static Gtk::HButtonBox hFerm2 ;
+  static Gtk::Label labFermture_seuil ;
+  labFermture_seuil.set_markup("<b>seuil de fermeture</b>");
+  hFerm2.add( labFermture_seuil ) ;
+  fermeture_seuil.set_digits(0);
+  fermeture_seuil.set_range(0, 255);
+  fermeture_seuil.set_increments(1, 1); 
+  fermeture_seuil.set_value( option.fermeture_seuil );   
+  hFerm2.add( fermeture_seuil ) ;
+  tabFermeture.add( hFerm2 ) ;
   
 
   /*******************
@@ -468,6 +491,8 @@ void MainWindow::initSignals()
   btn_affinage.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_affinage) ) ;
   
   fermeture.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_fermeture) ) ;
+  fermeture_size.signal_value_changed().connect( sigc::mem_fun(*this, &MainWindow::on_fermeture_size) ) ;
+  fermeture_seuil.signal_value_changed().connect( sigc::mem_fun(*this, &MainWindow::on_fermeture_seuil) ) ;
   
   color.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_color) ) ;
   
@@ -932,6 +957,8 @@ FERMETURE
 void MainWindow::on_fermeture()
 {
   log( "-------------------------\nFermeture");
+  log( "  * size : "+std::to_string(option.fermeture_size)) ;
+  log( "  * seuil : "+std::to_string(option.fermeture_seuil)) ;
   log("...en cours") ;
   
   Image temp = *actu ;
@@ -946,6 +973,16 @@ void MainWindow::on_fermeture()
 
   outputGtk.set((*actu).toGtk(zoom_actu));
   log( " -->  " + std::to_string(sec.count()) + "  Seconds\n-------------------------" ) ;
+}
+
+void MainWindow::on_fermeture_size()
+{
+  option.fermeture_size = fermeture_size.get_value() ;
+}
+
+void MainWindow::on_fermeture_seuil()
+{
+  option.fermeture_seuil = fermeture_seuil.get_value() ;
 }
 
 /*
@@ -994,13 +1031,15 @@ void MainWindow::on_detection()
   log( "  * fenetre : "+std::to_string(option.seuil_fenetre)) ;
   log( "  * bas : "+std::to_string(option.seuil_bas)) ;
   log( "  * haut : "+std::to_string(option.seuil_haut)) ;
+  log( "--Fermeture--");
+  log( "  * size : "+std::to_string(option.fermeture_size)) ;
+  log( "  * seuil : "+std::to_string(option.fermeture_seuil)) ;
   log( "--Options--");
   log( (option.show_color)?"  * couleur : oui":"  * couleur : non") ;
   log( (option.keep_norme)?"  * intensité en fonction de la norme : oui":"  * intensité en fonction de la norme : non") ;
-
   log("...en cours") ;
-  Image temp = *actu ;
 
+  Image temp = *actu ;
   std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
   output.push_back( temp.detection_contour( option ) ) ;
   std::chrono::duration<double> sec = std::chrono::system_clock::now() - start;

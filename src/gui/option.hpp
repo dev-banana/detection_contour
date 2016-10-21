@@ -99,6 +99,9 @@ class Option
                 unsigned int seuil_fenetre ;
                 unsigned int seuil_bas ;
                 unsigned int seuil_haut ;
+
+                unsigned int fermeture_size ;
+                unsigned int fermeture_seuil ;
                 
                 bool show_color ;
                 bool keep_norme ;
@@ -122,6 +125,8 @@ class Option
                 "seuil_fenetre : "<<std::to_string(r.seuil_fenetre)<<"; "<<
                 "seuil_bas : "<<std::to_string(r.seuil_bas)<<"; "<<
                 "seuil_haut : "<<std::to_string(r.seuil_haut)<<"; "<<
+                "fermeture_size : "<<std::to_string(r.fermeture_size)<<"; "<<
+                "fermeture_seuil : "<<std::to_string(r.fermeture_seuil)<<"; "<<
                 ((r.show_color)?"couleur : oui":"couleur : non")<<"; "<<
                 ((r.keep_norme)?"color_norme : oui":"color_norme : non")<<
               " }";

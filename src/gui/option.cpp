@@ -10,12 +10,15 @@ Option::Option()
   filtre.prewitt();
   direction = MULTI_DIRECTIONNEL ;
 
-  seuil = HYSTERESIS_AUTO ;
+  seuil = HYSTERESIS ;
   seuil_calcul = MOYENNE ;
   seuil_val = 50 ;
   seuil_fenetre = 15 ;
   seuil_bas = 44 ;
   seuil_haut = 60 ;
+
+  fermeture_size = 5 ;
+  fermeture_seuil = 40 ;
   
   show_color = true ;
   keep_norme = true ;
