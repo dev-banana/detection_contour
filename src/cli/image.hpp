@@ -39,7 +39,6 @@ class Image : public cv::Mat
                 bool isRGB() ;
                 Image toGray( unsigned int ) ;
                 Image inverse() ;
-                Image normalize() ;
                 Image rotate90() ;
                 Image rotate180() ;
 

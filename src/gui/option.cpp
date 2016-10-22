@@ -8,10 +8,10 @@ Option::Option()
   lissage_sigma = 5 ;
 
   filtre.prewitt();
-  direction = MULTI_DIRECTIONNEL ;
+  direction = BI_DIRECTIONNEL ;
   type_norme = EUCLIDIENNE ;
 
-  seuil = HYSTERESIS ;
+  seuil = HYSTERESIS_AUTO ;
   seuil_calcul = MOYENNE ;
   seuil_val = 50 ;
   seuil_fenetre = 15 ;

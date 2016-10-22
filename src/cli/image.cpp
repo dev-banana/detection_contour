@@ -135,6 +135,13 @@ bool Image::isRGB()
     return false ;
 }
 
+/*
+    Passe l'image en Nuances de Gris
+    3 modes possibles :
+    CLARTE
+    LUMINOSITE
+    MOYENNE
+*/
 Image Image::toGray( unsigned int mode)
 {
     Image res = clone() ;
@@ -173,6 +180,9 @@ Image Image::toGray( unsigned int mode)
 }
 
 
+/*
+    Inverse les couleurs de l'image
+*/
 Image Image::inverse()
 {
     Image res = clone() ;
@@ -190,38 +200,6 @@ Image Image::inverse()
     return res ;
 }
 
-Image Image::normalize()
-{
-    Image res = clone() ;
-
-    float min = 255 ;
-    float max = 0 ;
-
-    for(int i = 0 ; i < rows ; i++ )
-    {
-        for (int j = 0; j < cols; ++j)
-        {
-            if( at<cv::Vec3b>(i,j)[0] < min )
-                min = at<cv::Vec3b>(i,j)[0] ;
-
-            if( at<cv::Vec3b>(i,j)[0] > max )
-                max = at<cv::Vec3b>(i,j)[0] ;
-        } 
-    }
-
-    for(int i = 0 ; i < rows ; i++ )
-    {
-        for (int j = 0; j < cols; ++j)
-        {
-            float y = (( at<cv::Vec3b>(i,j)[0] -min)*255/(max-min)) ;
-            res.at<cv::Vec3b>(i,j)[0] = y ;
-            res.at<cv::Vec3b>(i,j)[1] = y ;
-            res.at<cv::Vec3b>(i,j)[2] = y ;
-        } 
-    }
-
-    return res ;    
-}
 
 Image Image::rotate90()
 {
@@ -279,6 +257,9 @@ Image Image::rotate180()
 }
 
 
+/*
+Applique un noyau de convolution quelconque passé en paramètre sur l'image
+*/
 Image Image::simple_convolution( const Filtre filtre )
 {
     Image res = clone() ;
@@ -311,6 +292,9 @@ Image Image::simple_convolution( const Filtre filtre )
     return res ;
 }
 
+/*
+ Lissage par filtre median
+*/
 Image Image::mediane( int size_kernel )
 {
     Image res = clone() ;
@@ -417,7 +401,6 @@ Image Image::filtre_differentiel( const Option option )
             break ;
     }
     
-    // #pragma omp parallel for
     for( int i = option.filtre.rows/2; i<rows - option.filtre.rows/2; i++ )
     {
         for ( int j=option.filtre.rows/2; j<cols - option.filtre.rows/2; j++ )

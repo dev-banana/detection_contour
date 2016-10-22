@@ -196,10 +196,10 @@ MainWindow::MainWindow()
   row2 = *(m_refTreeModel2->append());
   row2[m_Columns2.m_col_id] = BI_DIRECTIONNEL;
   row2[m_Columns2.m_col_name] = "Bi-Directionnel";
+  filtre_direction.set_active(row2);
   row2 = *(m_refTreeModel2->append());
   row2[m_Columns2.m_col_id] = MULTI_DIRECTIONNEL;
   row2[m_Columns2.m_col_name] = "Multi-Directionnel";
-  filtre_direction.set_active(row2);
   filtre_direction.pack_start(m_Columns2.m_col_name);
   tabFiltre.add( filtre_direction ) ;
 
@@ -239,10 +239,10 @@ MainWindow::MainWindow()
   row3 = *(m_refTreeModel3->append());
   row3[m_Columns3.m_col_id] = HYSTERESIS_AUTO;
   row3[m_Columns3.m_col_name] = "Seuillage Hysteresis Auto";
+  seuil_type.set_active(row3);
   row3 = *(m_refTreeModel3->append());
   row3[m_Columns3.m_col_id] = HYSTERESIS;
   row3[m_Columns3.m_col_name] = "Seuillage Hysteresis";
-  seuil_type.set_active(row3);
   seuil_type.pack_start(m_Columns3.m_col_name);
   tabSeuillage.add( seuil_type ) ;
 

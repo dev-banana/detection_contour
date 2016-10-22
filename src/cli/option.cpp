@@ -4,17 +4,38 @@
 Option::Option()
 { 
   lissage_type = GAUSSIEN ;
-  lissage_size = 7 ;
+  // lissage_type = MOYENNE ;
+  // lissage_type = MEDIANE ;
+
+  lissage_size = 7 ; //nombre impair
   lissage_sigma = 5 ;
 
   filtre.prewitt();
-  direction = MULTI_DIRECTIONNEL ;
-  type_norme = EUCLIDIENNE ;
+  // filtre.sobel();
+  // filtre.kirsch();
 
-  seuil = HYSTERESIS ;
+  direction = BI_DIRECTIONNEL ;
+  // direction = MULTI_DIRECTIONNEL ;
+  // direction = HORIZONTAL ;
+  // direction = VERTICAL ;
+
+
+  type_norme = EUCLIDIENNE ;
+  // type_norme = ABSOLUE ;
+  // type_norme = MAX ;
+
+  seuil = HYSTERESIS_AUTO ;
+  // seuil = HYSTERESIS ;
+  // seuil = UNIQUE ;
+  // seuil = GLOBAL ;
+  // seuil = LOCAL ;
+
   seuil_calcul = MOYENNE ;
+  // seuil_calcul = MEDIANE ;
+  // seuil_calcul = ECART_TYPE ;
+
   seuil_val = 50 ;
-  seuil_fenetre = 15 ;
+  seuil_fenetre = 15 ; //nb impair
   seuil_bas = 44 ;
   seuil_haut = 60 ;
 
