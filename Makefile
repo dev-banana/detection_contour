@@ -7,7 +7,7 @@ else
 endif
 
 
-PROGRAM = tp1
+PROGRAM = analysis
 
 BIN_DIR = bin
 OBJ_DIR = obj
