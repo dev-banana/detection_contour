@@ -59,3 +59,11 @@ Pour l'interface graphique :
 	gtkmm-3.0
 	gtk+-3.0
 	gdkmm-3.0
+
+______________________
+
+
+WIKI
+------
+
+Vous pouvez trouvez plus de détails sur l'utisation de ce programme dans le [wiki](https://github.com/dev-banana/detection_contour/wiki).
