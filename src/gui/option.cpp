@@ -23,6 +23,17 @@ Option::Option()
   
   show_color = true ;
   keep_norme = true ;
+
+  hough_seuil_lines = 100 ;
+  hough_seuil_circles = 100 ;
+  hough_rayon_min = 5 ;
+  hough_rayon_max = 40 ;
+  hough_distance_min = 5 ;
+  hough_calcul_edge = true ;
+  hough_on_origin = true ;
+  hough_precis = true ;
+  hough_affiche_acc = false ;
+  hough_type = BOTH ;
 }
 
 
@@ -127,6 +138,25 @@ void Option::set_lissage_type( unsigned int id )
       break ;
     default:
       lissage_type = e_type_calcul::MOYENNE ;
+      break ;
+  }
+}
+
+void Option::set_hough_type( unsigned int id )
+{
+  switch(id)
+  {
+    case 0:
+      hough_type = e_hough_type::BOTH ;
+      break ;
+    case 1:
+      hough_type = e_hough_type::DROITE ;
+      break ;
+    case 2:
+      hough_type = e_hough_type::CERCLE ;
+      break ;
+    default:
+      hough_type = e_hough_type::BOTH ;
       break ;
   }
 }

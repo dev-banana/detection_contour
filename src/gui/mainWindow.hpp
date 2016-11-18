@@ -214,15 +214,40 @@ protected:
 
 
 	/*******************
+	  HOUGH
+	*******************/
+
+	Gtk::Button hough ;
+	Gtk::VButtonBox tabHough ;
+	Gtk::SpinButton hough_seuil_lines, hough_seuil_circles, hough_rayon_min, hough_rayon_max, hough_distance_min ;
+	Gtk::CheckButton hough_calcul_edge, hough_on_origin, hough_precis, hough_affiche_acc ;
+	Gtk::ComboBox hough_type ;
+
+	ModelColumns m_Columns5;
+	Gtk::CellRendererText m_cell5;
+	Glib::RefPtr<Gtk::ListStore> m_refTreeModel5;
+	/////////////////	 
+	void on_hough() ;
+	void on_hough_seuil_lines() ;
+	void on_hough_seuil_circles() ;
+	void on_hough_rayon_min() ;
+	void on_hough_rayon_max() ;
+	void on_hough_distance_min() ;
+	void on_hough_calcul_edge() ;
+	void on_hough_on_origin() ;
+	void on_hough_precis() ;
+	void on_hough_affiche_acc() ;
+	void on_hough_type() ;
+
+
+	/*******************
 	  GENERAL
 	*******************/
 
-	Gtk::CheckButton show_color, keep_norme, affine ;
+	Gtk::CheckButton show_color, keep_norme ;
 	/////////////////	 
 	void on_show_color() ;
 	void on_keep_norme() ;
-	void on_affine() ;
-
 };
 
 #endif // MAINWINDOW_H

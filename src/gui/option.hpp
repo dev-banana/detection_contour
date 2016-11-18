@@ -90,6 +90,24 @@ inline const std::string ToStringTypeNorme(e_type_norme v)
     }
 }
 
+enum e_hough_type
+{
+        BOTH=0,
+        DROITE,
+        CERCLE
+} ;
+
+inline const std::string ToStringHoughType(e_hough_type v)
+{
+    switch (v)
+    {
+        case BOTH:   return "BOTH" ;
+        case DROITE:   return "DROITE" ;
+        case CERCLE: return "CERCLE" ;
+        default:      return "[Unknown HOUGH TYPE]";
+    }
+}
+
 /**
 * Classe permettant de passer facilement les options choisies par l'utilisateurs
 * au diverses fonctions de traitement.
@@ -126,12 +144,24 @@ class Option
                 bool show_color ;
                 bool keep_norme ;
 
+                unsigned int hough_seuil_lines ;
+                unsigned int hough_seuil_circles ;
+                unsigned int hough_rayon_min;
+                unsigned int hough_rayon_max ;
+                unsigned int hough_distance_min ;
+                bool hough_calcul_edge ;
+                bool hough_on_origin ;
+                bool hough_precis ;
+                bool hough_affiche_acc ;
+                e_hough_type hough_type ;
+
                 
             void set_direction( unsigned int ) ;
             void set_type_norme( unsigned int ) ;
             void set_seuil( unsigned int ) ;
             void set_seuil_calcul( unsigned int ) ;
             void set_lissage_type( unsigned int ) ;
+            void set_hough_type( unsigned int ) ;
 
             friend std::ostream& operator<<(std::ostream& out, const Option& r){
               return out << "{ "<<
@@ -149,6 +179,15 @@ class Option
                 "seuil_haut : "<<std::to_string(r.seuil_haut)<<"; "<<
                 "fermeture_size : "<<std::to_string(r.fermeture_size)<<"; "<<
                 "fermeture_seuil : "<<std::to_string(r.fermeture_seuil)<<"; "<<
+                "hough_seuil_lines : "<<std::to_string(r.hough_seuil_lines)<<"; "<<
+                "hough_seuil_circles : "<<std::to_string(r.hough_seuil_circles)<<"; "<<
+                "hough_rayon_min : "<<std::to_string(r.hough_rayon_min)<<"; "<<
+                "hough_rayon_max : "<<std::to_string(r.hough_rayon_max)<<"; "<<
+                "hough_distance_min : "<<std::to_string(r.hough_distance_min)<<"; "<<
+                ((r.hough_calcul_edge)?"hough_calcul_edge : oui":"hough_calcul_edge : non")<<"; "<<
+                ((r.hough_on_origin)?"hough_on_origin : oui":"hough_on_origin : non")<<"; "<<
+                ((r.hough_precis)?"hough_precis : oui":"hough_precis : non")<<"; "<<
+                "hough_type : "<<ToStringHoughType(r.hough_type)<<"; "<<
                 ((r.show_color)?"couleur : oui":"couleur : non")<<"; "<<
                 ((r.keep_norme)?"color_norme : oui":"color_norme : non")<<
               " }";

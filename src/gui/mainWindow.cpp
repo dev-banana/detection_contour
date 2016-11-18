@@ -4,7 +4,11 @@ MainWindow::MainWindow()
 {
   set_title( "Analyse d'image" ) ;
   set_border_width( 5 ) ;
-  set_size_request( 0.9*gdk_screen_width(), 0.9*gdk_screen_height() ) ;
+
+  int wi = gdk_screen_width() ;
+  // wi = gdk_screen_get_monitor_width_mm(gdk_screen_get_default(), 1) ; //si double ecran
+  int he = gdk_screen_height() ;
+  set_size_request( 0.9*wi, 0.9*he ) ;
   int w, h ;
   get_size_request(w, h) ;
 
@@ -355,6 +359,123 @@ MainWindow::MainWindow()
 
   detection.set_label( "Détection de contours" ) ;
 
+  /*******************
+    HOUGH
+  *******************/
+
+  hough.set_label( "Transformée de Hough" ) ;
+
+  static Gtk::HButtonBox pan_hough_type ;
+  static Gtk::Label labHoughT ;
+  labHoughT.set_markup("<b>Appliquer Hough aux </b>");
+  pan_hough_type.add( labHoughT ) ;
+  m_refTreeModel5 = Gtk::ListStore::create(m_Columns5);
+  hough_type.set_model(m_refTreeModel5);
+  Gtk::TreeModel::Row row5 = *(m_refTreeModel5->append());
+  row5[m_Columns5.m_col_id] = BOTH;
+  row5[m_Columns5.m_col_name] = "Droites et Cercles";
+  hough_type.set_active(row5);
+  row5 = *(m_refTreeModel5->append());
+  row5[m_Columns5.m_col_id] = DROITE;
+  row5[m_Columns5.m_col_name] = "Droites";
+  row5 = *(m_refTreeModel5->append());
+  row5[m_Columns5.m_col_id] = CERCLE;
+  row5[m_Columns5.m_col_name] = "Cercles";
+  hough_type.pack_start(m_Columns5.m_col_name);
+  pan_hough_type.add( hough_type ) ;
+
+  static Gtk::HButtonBox pan_hough_affiche_acc ;
+  static Gtk::Label labHough_affiche_acc ;
+  labHough_affiche_acc.set_markup("<b>Affiche accumulateur</b>");
+  pan_hough_affiche_acc.add( labHough_affiche_acc ) ;
+  pan_hough_affiche_acc.add( hough_affiche_acc ) ;
+
+  static Gtk::HButtonBox pan_hough_edge ;
+  static Gtk::Label labHoughEdge ;
+  labHoughEdge.set_markup("<b>Effectue d'abord une détection de contour</b>");
+  pan_hough_edge.add( labHoughEdge ) ;
+  pan_hough_edge.add( hough_calcul_edge ) ;
+  hough_calcul_edge.set_active( true ) ;
+
+  static Gtk::HButtonBox pan_hough_origin ;
+  static Gtk::Label labHoughOrigin ;
+  labHoughOrigin.set_markup("<b>Montrer le résultat sur l'image d'origine</b>");
+  pan_hough_origin.add( labHoughOrigin ) ;
+  pan_hough_origin.add( hough_on_origin ) ;
+  hough_on_origin.set_active( true ) ;
+
+  static Gtk::HButtonBox pan_hough_seuil_lines ;
+  static Gtk::Label labHough_seuil_lines ;
+  labHough_seuil_lines.set_markup("<b>seuil droite</b>");
+  pan_hough_seuil_lines.add( labHough_seuil_lines ) ;
+  hough_seuil_lines.set_digits(0);
+  hough_seuil_lines.set_range(0, 1000);
+  hough_seuil_lines.set_increments(1, 1); 
+  hough_seuil_lines.set_value( option.hough_seuil_lines );   
+  pan_hough_seuil_lines.add( hough_seuil_lines ) ;
+
+  static Gtk::HButtonBox pan_hough_precis ;
+  static Gtk::Label labHoughPrecis ;
+  labHoughPrecis.set_markup("<b>Tracer de droite (point par point)</b>");
+  pan_hough_precis.add( labHoughPrecis ) ;
+  pan_hough_precis.add( hough_precis ) ;
+  hough_precis.set_active( true ) ;
+
+  static Gtk::HButtonBox pan_hough_seuil_circles ;
+  static Gtk::Label labHough_seuil_circles ;
+  labHough_seuil_circles.set_markup("<b>seuil cercles</b>");
+  pan_hough_seuil_circles.add( labHough_seuil_circles ) ;
+  hough_seuil_circles.set_digits(0);
+  hough_seuil_circles.set_range(1, 300);
+  hough_seuil_circles.set_increments(1, 1); 
+  hough_seuil_circles.set_value( option.hough_seuil_circles );   
+  pan_hough_seuil_circles.add( hough_seuil_circles ) ;
+
+  static Gtk::HButtonBox pan_hough_rayon_min ;
+  static Gtk::Label labHough_rayon_min ;
+  labHough_rayon_min.set_markup("<b>rayon min cercles (% width)</b>");
+  pan_hough_rayon_min.add( labHough_rayon_min ) ;
+  hough_rayon_min.set_digits(0);
+  hough_rayon_min.set_range(1, 100);
+  hough_rayon_min.set_increments(1, 1); 
+  hough_rayon_min.set_value( option.hough_rayon_min );   
+  pan_hough_rayon_min.add( hough_rayon_min ) ;
+
+  static Gtk::HButtonBox pan_hough_rayon_max ;
+  static Gtk::Label labHough_rayon_max ;
+  labHough_rayon_max.set_markup("<b>rayon max cercles (% width)</b>");
+  pan_hough_rayon_max.add( labHough_rayon_max ) ;
+  hough_rayon_max.set_digits(0);
+  hough_rayon_max.set_range(1, 100);
+  hough_rayon_max.set_increments(1, 1); 
+  hough_rayon_max.set_value( option.hough_rayon_max );   
+  pan_hough_rayon_max.add( hough_rayon_max ) ;
+
+  static Gtk::HButtonBox pan_hough_distance_min ;
+  static Gtk::Label labHough_distance_min ;
+  labHough_distance_min.set_markup("<b>distance Min circles (px)</b>");
+  pan_hough_distance_min.add( labHough_distance_min ) ;
+  hough_distance_min.set_digits(0);
+  hough_distance_min.set_range(0, 1000);
+  hough_distance_min.set_increments(1, 1); 
+  hough_distance_min.set_value( option.hough_distance_min );   
+  pan_hough_distance_min.add( hough_distance_min ) ;
+
+  tabHough.add( pan_hough_type ) ;
+  tabHough.add( pan_hough_affiche_acc ) ;
+  tabHough.add( pan_hough_edge ) ;
+  tabHough.add( pan_hough_origin ) ;
+  tabHough.add( pan_hough_seuil_lines ) ;
+  tabHough.add( pan_hough_precis ) ;
+  tabHough.add( pan_hough_seuil_circles ) ;
+  tabHough.add( pan_hough_rayon_min ) ;
+  tabHough.add( pan_hough_rayon_max ) ;
+  tabHough.add( pan_hough_distance_min ) ;
+
+  /*******************
+    GENERAL
+  *******************/
+
   static Gtk::Label labColor ;
   labColor.set_markup("<b>Couleur en fonction des directions</b>");
   static Gtk::Label labNorme ;
@@ -420,6 +541,7 @@ MainWindow::MainWindow()
   tabOption.append_page(tabAffinage, "Affinage");
   tabOption.append_page(tabFermeture, "Fermeture");
   tabOption.append_page(tabDetection, "Détection");
+  tabOption.append_page(tabHough, "Hough");
 
   static Gtk::HSeparator sep1 ; buttonBox.add( sep1 ) ;
   buttonBox.add( pan_desaturate ) ;
@@ -434,6 +556,8 @@ MainWindow::MainWindow()
   buttonBox.add( color ) ;
   static Gtk::HSeparator sep3 ; buttonBox.add( sep3 ) ;
   buttonBox.add( detection ) ;
+  static Gtk::HSeparator sep33 ; buttonBox.add( sep33 ) ;
+  buttonBox.add( hough ) ;
 
   static Gtk::HSeparator sep4 ; buttonBox.add( sep4 ) ;
   buttonBox.add( pan_show_color ) ;
@@ -514,6 +638,18 @@ void MainWindow::initSignals()
   
   detection.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_detection) ) ;
   
+  hough.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_hough) ) ;
+  hough_seuil_lines.signal_value_changed().connect( sigc::mem_fun(*this, &MainWindow::on_hough_seuil_lines) ) ;
+  hough_seuil_circles.signal_value_changed().connect( sigc::mem_fun(*this, &MainWindow::on_hough_seuil_circles) ) ;
+  hough_rayon_min.signal_value_changed().connect( sigc::mem_fun(*this, &MainWindow::on_hough_rayon_min) ) ;
+  hough_rayon_max.signal_value_changed().connect( sigc::mem_fun(*this, &MainWindow::on_hough_rayon_max) ) ;
+  hough_distance_min.signal_value_changed().connect( sigc::mem_fun(*this, &MainWindow::on_hough_distance_min) ) ;
+  hough_calcul_edge.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_hough_calcul_edge) ) ;
+  hough_on_origin.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_hough_on_origin) ) ;
+  hough_precis.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_hough_precis) ) ;
+  hough_affiche_acc.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_hough_affiche_acc) ) ;
+  hough_type.signal_changed().connect( sigc::mem_fun(*this, &MainWindow::on_hough_type) ) ;
+
   show_color.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_show_color) ) ;
   keep_norme.signal_clicked().connect( sigc::mem_fun(*this, &MainWindow::on_keep_norme) ) ;
 }
@@ -594,6 +730,9 @@ void MainWindow::on_open()
 
 void MainWindow::on_save()
 {
+
+  if( output.empty() ) return ;
+
   std::string path = getFilePath() ;
 
   if(path != "")
@@ -605,12 +744,16 @@ void MainWindow::on_save()
 
 void MainWindow::on_refresh()
 {
+  if( output.empty() ) return ;
+  
   outputGtk.set((*actu).toGtk(zoom_actu));
 }
 
 void MainWindow::on_undo()
 {
 
+  if( output.empty() ) return ;
+  
   if(actu != output.begin()){
     log( "Undo : "+(*actu_option) ) ;
     --actu;
@@ -621,6 +764,8 @@ void MainWindow::on_undo()
 
 void MainWindow::on_redo()
 {
+  if( output.empty() ) return ;
+  
   ++actu ;
   ++actu_option ;
   
@@ -635,14 +780,16 @@ void MainWindow::on_redo()
 
 void MainWindow::on_reset()
 {
-
+  
   bufferConsole->set_text("") ;
   Gtk::TextBuffer::iterator buffer_it_ = bufferConsole->end();
   consoleBox.scroll_to(buffer_it_);
 
   log( "Reset" ) ;
-  output.clear() ;
-  output_option.clear() ;
+  if( !output.empty() ){
+    output.clear() ;
+    output_option.clear() ;
+  }
 
   output.push_back( Image(input) ) ;
   output_option.push_back( "base" ) ;
@@ -654,6 +801,8 @@ void MainWindow::on_reset()
 
 void MainWindow::on_zoomIn()
 {
+  if( output.empty() ) return ;
+  
   zoom_actu += 50 ;
 
   inputGtk.set(input.toGtk(zoom_actu));
@@ -661,6 +810,8 @@ void MainWindow::on_zoomIn()
 }
  void MainWindow::on_zoomOut()
 {
+  if( output.empty() ) return ;
+  
   zoom_actu -= 50 ;
   if(zoom_actu < 512)
       zoom_actu = 512 ;
@@ -670,6 +821,8 @@ void MainWindow::on_zoomIn()
 }
 void MainWindow::on_zoomFit()
 {
+  if( output.empty() ) return ;
+  
   zoom_actu = 512 ;
 
   inputGtk.set(input.toGtk(zoom_actu));
@@ -678,6 +831,8 @@ void MainWindow::on_zoomFit()
 
 void MainWindow::on_newBase()
 {
+  if( output.empty() ) return ;
+  
   log( "Swap Output -> Input" ) ;
   input = (*actu).clone() ;
   on_reset() ;
@@ -691,6 +846,8 @@ UTILS
 
 void MainWindow::on_desaturate()
 {
+  if( output.empty() ) return ;
+  
   Gtk::TreeModel::iterator iter = combo_desaturate.get_active();
   int id = (*iter)[m_Columns.m_col_id];
   Glib::ustring name = (*iter)[m_Columns.m_col_name];
@@ -707,6 +864,8 @@ void MainWindow::on_desaturate()
 
 void MainWindow::on_inverse()
 {
+  if( output.empty() ) return ;
+  
   log( "Inverse Colors" ) ;
   Image temp = *actu ;
   output.push_back( temp.inverse() ) ;
@@ -720,6 +879,8 @@ void MainWindow::on_inverse()
 
 void MainWindow::on_rotate90()
 {
+  if( output.empty() ) return ;
+  
   log( "Rotate 90° " ) ;
   Image temp = *actu ;
 
@@ -741,6 +902,8 @@ void MainWindow::on_rotate90()
 
 void MainWindow::on_rotate180()
 {
+  if( output.empty() ) return ;
+  
   log( "Rotate 180° " ) ;
   Image temp = *actu ;
   output.push_back( temp.rotate180() ) ;
@@ -758,6 +921,8 @@ LISSAGE
 */
 void MainWindow::on_lissage()
 {
+  if( output.empty() ) return ;
+  
   log( "-------------------------\nLissage");
   log( "  * type : "+ToStringTypeCalcul(option.lissage_type) ) ;
   log( "  * size : "+std::to_string(option.lissage_size) ) ;
@@ -807,6 +972,8 @@ FILTRE
 
 void MainWindow::on_filtre()
 {
+  if( output.empty() ) return ;
+  
   std::stringstream buffer;
   buffer << option.filtre ;
   std::string mat = buffer.str() ;
@@ -886,6 +1053,8 @@ SEUILLAGE
 
 void MainWindow::on_seuil()
 {
+  if( output.empty() ) return ;
+  
   log( "-------------------------\nSeuillage");
   log( "  * seuillage : "+ToStringSeuil(option.seuil)) ;
   log( "  * méthode : "+ToStringTypeCalcul(option.seuil_calcul)) ;
@@ -956,6 +1125,8 @@ AFFINAGE
 
 void MainWindow::on_affinage()
 {
+  if( output.empty() ) return ;
+  
   log( "-------------------------\nAffinage");
   log("...en cours") ;
   Image temp = *actu ;
@@ -979,6 +1150,8 @@ FERMETURE
 
 void MainWindow::on_fermeture()
 {
+  if( output.empty() ) return ;
+  
   log( "-------------------------\nFermeture");
   log( "  * size : "+std::to_string(option.fermeture_size)) ;
   log( "  * seuil : "+std::to_string(option.fermeture_seuil)) ;
@@ -1014,6 +1187,8 @@ COLOR
 
 void MainWindow::on_color()
 {
+  if( output.empty() ) return ;
+  
   log( "-------------------------\nColorise");
   log("...en cours") ;
   
@@ -1037,6 +1212,8 @@ DETECTION
 
 void MainWindow::on_detection()
 {
+  if( output.empty() ) return ;
+  
   log( "-------------------------\nDétection de contour");
 
   log( "--Lissage--");
@@ -1089,4 +1266,89 @@ void MainWindow::on_show_color()
 void MainWindow::on_keep_norme()
 {
   option.keep_norme = !option.keep_norme ;
+}
+
+
+/*
+HOUGH
+*/
+
+void MainWindow::on_hough()
+{
+  if( output.empty() ) return ;
+  
+  log( "-------------------------\nTransformée de Hough");
+  log("...en cours") ;
+
+  Image temp = *actu ;
+  std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+  
+
+  if( option.hough_on_origin )
+    output.push_back( temp.hough_transform( option, input ) ) ;
+  else
+    output.push_back( temp.hough_transform( option, temp ) ) ;
+  
+
+  std::chrono::duration<double> sec = std::chrono::system_clock::now() - start;
+  
+  actu = --(output.end());
+
+  output_option.push_back("Hough" ) ;
+  actu_option = --(output_option.end());
+
+  outputGtk.set((*actu).toGtk(zoom_actu));
+  log( " -->  " + std::to_string(sec.count()) + "  Seconds\n-------------------------" ) ;
+}
+
+void MainWindow::on_hough_seuil_lines()
+{
+  option.hough_seuil_lines = hough_seuil_lines.get_value() ;
+}
+
+void MainWindow::on_hough_seuil_circles()
+{
+  option.hough_seuil_circles = hough_seuil_circles.get_value() ;
+}
+
+void MainWindow::on_hough_rayon_min()
+{
+  option.hough_rayon_min = hough_rayon_min.get_value() ;
+}
+
+void MainWindow::on_hough_rayon_max()
+{
+  option.hough_rayon_max = hough_rayon_max.get_value() ;
+}
+
+void MainWindow::on_hough_distance_min()
+{
+  option.hough_distance_min = hough_distance_min.get_value() ;
+}
+
+void MainWindow::on_hough_calcul_edge()
+{
+  option.hough_calcul_edge = !option.hough_calcul_edge ;
+}
+
+void MainWindow::on_hough_on_origin()
+{
+  option.hough_on_origin = !option.hough_on_origin ;
+}
+
+void MainWindow::on_hough_precis()
+{
+  option.hough_precis = !option.hough_precis ;
+}
+
+void MainWindow::on_hough_affiche_acc()
+{
+  option.hough_affiche_acc = !option.hough_affiche_acc ;
+}
+
+void MainWindow::on_hough_type()
+{
+  Gtk::TreeModel::iterator iter = hough_type.get_active() ;
+  int id = (*iter)[m_Columns.m_col_id];
+  option.set_hough_type( id ) ;
 }

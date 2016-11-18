@@ -1,4 +1,5 @@
 #include "image.hpp"
+#include "hough.hpp"
 
 using namespace std ;
 
@@ -100,6 +101,17 @@ Image Image::clone()
 }
 
 
+// Opérateurs d'accès :
+cv::Vec3b &Image::operator()( unsigned short int i, unsigned short int j )
+{
+    return at<cv::Vec3b>(i,j);
+}
+
+cv::Vec3b Image::operator()( unsigned short int i, unsigned short int j ) const
+{
+    return at<cv::Vec3b>(i,j);
+}
+
 
 /*************************************************************
 **************************************************************
@@ -108,6 +120,39 @@ Image Image::clone()
 
 **************************************************************
 *************************************************************/
+
+float Image::getGradient(unsigned int i, unsigned int j)
+{
+    if( i > gradients.size() )
+        return -1 ;
+
+    if( j > gradients[i].size() )
+        return -1 ;
+
+    return gradients[i][j] ;
+}
+
+float Image::getNorme(unsigned int i, unsigned int j)
+{
+    if( i > normes.size() )
+        return -1 ;
+
+    if( j > normes[i].size() )
+        return -1 ;
+
+    return normes[i][j] ;
+}
+
+float Image::getDir(unsigned int i, unsigned int j)
+{
+    if( i > dirs.size() )
+        return -1 ;
+
+    if( j > dirs[i].size() )
+        return -1 ;
+
+    return dirs[i][j] ;
+}
 
 Glib::RefPtr<Gdk::Pixbuf> Image::toGtk( int sizeMax )
 {
@@ -183,9 +228,9 @@ Image Image::toGray( unsigned int mode)
         for (int j = 0; j < cols; ++j)
         {
             double intensite = 0 ;
-            double b = res.at<cv::Vec3b>(i,j)[0] ;         // B
-            double g = res.at<cv::Vec3b>(i,j)[1] ;         // G
-            double r = res.at<cv::Vec3b>(i,j)[2] ;         // R
+            double b = res(i,j)[0] ;         // B
+            double g = res(i,j)[1] ;         // G
+            double r = res(i,j)[2] ;         // R
             switch( mode )
             {
                 case 1 : //clarté
@@ -202,9 +247,9 @@ Image Image::toGray( unsigned int mode)
                     break ;
             }
 
-            res.at<cv::Vec3b>(i,j)[0] = intensite ;
-            res.at<cv::Vec3b>(i,j)[1] = intensite ;
-            res.at<cv::Vec3b>(i,j)[2] = intensite ;
+            res(i,j)[0] = intensite ;
+            res(i,j)[1] = intensite ;
+            res(i,j)[2] = intensite ;
         } 
     }
 
@@ -223,9 +268,9 @@ Image Image::inverse()
     {
         for (int j = 0; j < cols; ++j)
         {
-            res.at<cv::Vec3b>(i,j)[0] = 255-at<cv::Vec3b>(i,j)[0];
-            res.at<cv::Vec3b>(i,j)[1] = 255-at<cv::Vec3b>(i,j)[1];
-            res.at<cv::Vec3b>(i,j)[2] = 255-at<cv::Vec3b>(i,j)[2];
+            res(i,j)[0] = 255-(*this)(i,j)[0];
+            res(i,j)[1] = 255-(*this)(i,j)[1];
+            res(i,j)[2] = 255-(*this)(i,j)[2];
         } 
     }
 
@@ -250,7 +295,7 @@ Image Image::rotate90()
     for ( int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             
-            res.at<cv::Vec3b>(j, cols-1-i) = at<cv::Vec3b>(i, j) ;
+            res(j, cols-1-i) = (*this)(i, j) ;
 
             res.dirs[j][cols-1-i] = dirs[i][j] ;
             res.gradients[j][cols-1-i] = gradients[i][j] ;
@@ -277,7 +322,7 @@ Image Image::rotate180()
 
         for (int j = 0; j < cols; j++) {
             
-            res.at<cv::Vec3b>(rows-1-i, cols-1-j) = at<cv::Vec3b>(i, j) ;
+            res(rows-1-i, cols-1-j) = (*this)(i, j) ;
 
             res.dirs[rows-1-i][cols-1-j] = dirs[i][j] ;
             res.gradients[rows-1-i][cols-1-j] = gradients[i][j] ;
@@ -309,15 +354,15 @@ Image Image::simple_convolution( const Filtre filtre )
                 for( int l=-filtre.cols/2; l<=filtre.cols/2; l++ )
                 {
 
-                    sommeR += at<cv::Vec3b>(i+k,j+l)[0]*filtre.at<float>(k+filtre.rows/2,l+filtre.cols/2) ; 
-                    sommeG += at<cv::Vec3b>(i+k,j+l)[1]*filtre.at<float>(k+filtre.rows/2,l+filtre.cols/2) ; 
-                    sommeB += at<cv::Vec3b>(i+k,j+l)[2]*filtre.at<float>(k+filtre.rows/2,l+filtre.cols/2) ; 
+                    sommeR += (*this)(i+k,j+l)[0]*filtre.at<float>(k+filtre.rows/2,l+filtre.cols/2) ; 
+                    sommeG += (*this)(i+k,j+l)[1]*filtre.at<float>(k+filtre.rows/2,l+filtre.cols/2) ; 
+                    sommeB += (*this)(i+k,j+l)[2]*filtre.at<float>(k+filtre.rows/2,l+filtre.cols/2) ; 
                 } 
             }
 
-            res.at<cv::Vec3b>(i,j)[0] = sommeR ;
-            res.at<cv::Vec3b>(i,j)[1] = sommeG ;
-            res.at<cv::Vec3b>(i,j)[2] = sommeB ;
+            res(i,j)[0] = sommeR ;
+            res(i,j)[1] = sommeG ;
+            res(i,j)[2] = sommeB ;
         }
     }
 
@@ -347,9 +392,9 @@ Image Image::mediane( int size_kernel )
             {
                 for( int l=-size_kernel/2; l<=size_kernel/2; l++ )
                 {
-                    triR[n] = at<cv::Vec3b>(i+k, j+l)[0] ;
-                    triG[n] = at<cv::Vec3b>(i+k, j+l)[1] ;
-                    triB[n] = at<cv::Vec3b>(i+k, j+l)[2] ;
+                    triR[n] = (*this)(i+k, j+l)[0] ;
+                    triG[n] = (*this)(i+k, j+l)[1] ;
+                    triB[n] = (*this)(i+k, j+l)[2] ;
                     
                     n++ ;
                 } 
@@ -357,9 +402,9 @@ Image Image::mediane( int size_kernel )
             sort(triR.begin(), triR.end());
             sort(triG.begin(), triG.end());
             sort(triB.begin(), triB.end());
-            res.at<cv::Vec3b>(i,j)[0] = triR[ sizeTab/2 ] ;
-            res.at<cv::Vec3b>(i,j)[1] = triG[ sizeTab/2 ] ;
-            res.at<cv::Vec3b>(i,j)[2] = triB[ sizeTab/2 ] ;
+            res(i,j)[0] = triR[ sizeTab/2 ] ;
+            res(i,j)[1] = triG[ sizeTab/2 ] ;
+            res(i,j)[2] = triB[ sizeTab/2 ] ;
         }
     }
 
@@ -373,6 +418,12 @@ Image Image::mediane( int size_kernel )
 
 **************************************************************
 *************************************************************/
+
+bool Image::is_contour( const unsigned int x, const unsigned int y )
+{
+    return ( ( (*this)(x,y)[0] > 0 ) || ( (*this)(x,y)[1] > 0 ) || ( (*this)(x,y)[2] > 0 ) ) ;
+}
+
 
 Image Image::lissage( const Option option )
 {
@@ -447,21 +498,21 @@ Image Image::filtre_differentiel( const Option option )
                     switch( option.direction )
                     {
                         case HORIZONTAL : case VERTICAL :
-                            gradient += at<cv::Vec3b>(i+k,j+l)[0]*tabFiltre[0].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ; 
+                            gradient += (*this)(i+k,j+l)[0]*tabFiltre[0].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ; 
                             break ;
                         case BI_DIRECTIONNEL :    
-                            gradient += at<cv::Vec3b>(i+k,j+l)[0]*tabFiltre[0].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ; 
-                            gradient1 += at<cv::Vec3b>(i+k,j+l)[0]*tabFiltre[1].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
+                            gradient += (*this)(i+k,j+l)[0]*tabFiltre[0].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ; 
+                            gradient1 += (*this)(i+k,j+l)[0]*tabFiltre[1].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
                             break ;
                         case MULTI_DIRECTIONNEL :
-                            gradient += at<cv::Vec3b>(i+k,j+l)[0]*tabFiltre[0].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ; 
-                            gradient1 += at<cv::Vec3b>(i+k,j+l)[0]*tabFiltre[1].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
-                            gradient2 += at<cv::Vec3b>(i+k,j+l)[0]*tabFiltre[2].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ; 
-                            gradient3 += at<cv::Vec3b>(i+k,j+l)[0]*tabFiltre[3].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
-                            gradient4 += at<cv::Vec3b>(i+k,j+l)[0]*tabFiltre[4].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
-                            gradient5 += at<cv::Vec3b>(i+k,j+l)[0]*tabFiltre[5].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
-                            gradient6 += at<cv::Vec3b>(i+k,j+l)[0]*tabFiltre[6].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
-                            gradient7 += at<cv::Vec3b>(i+k,j+l)[0]*tabFiltre[7].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
+                            gradient += (*this)(i+k,j+l)[0]*tabFiltre[0].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ; 
+                            gradient1 += (*this)(i+k,j+l)[0]*tabFiltre[1].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
+                            gradient2 += (*this)(i+k,j+l)[0]*tabFiltre[2].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ; 
+                            gradient3 += (*this)(i+k,j+l)[0]*tabFiltre[3].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
+                            gradient4 += (*this)(i+k,j+l)[0]*tabFiltre[4].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
+                            gradient5 += (*this)(i+k,j+l)[0]*tabFiltre[5].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
+                            gradient6 += (*this)(i+k,j+l)[0]*tabFiltre[6].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
+                            gradient7 += (*this)(i+k,j+l)[0]*tabFiltre[7].at<float>(k+option.filtre.rows/2,l+option.filtre.rows/2) ;  
                             break ;
                         default :
                             break ;
@@ -519,9 +570,9 @@ Image Image::filtre_differentiel( const Option option )
                     break ;
             }
 
-            res.at<cv::Vec3b>(i,j)[0] = norme ;
-            res.at<cv::Vec3b>(i,j)[1] = norme ;
-            res.at<cv::Vec3b>(i,j)[2] = norme ;
+            res(i,j)[0] = norme ;
+            res(i,j)[1] = norme ;
+            res(i,j)[2] = norme ;
 
             res.dirs[i][j] = dir ;
             res.gradients[i][j] = gradient ;
@@ -623,15 +674,15 @@ void Image::seuil_unique( Option option )
         {
             if( normes[i][j] < option.seuil_val ) //SEUILLAGE
             {
-                at<cv::Vec3b>(i,j)[0] = 0 ;
-                at<cv::Vec3b>(i,j)[1] = 0 ;
-                at<cv::Vec3b>(i,j)[2] = 0 ;
+                (*this)(i,j)[0] = 0 ;
+                (*this)(i,j)[1] = 0 ;
+                (*this)(i,j)[2] = 0 ;
             }
             else if(!option.keep_norme)
             {
-                at<cv::Vec3b>(i,j)[0] = 255 ;
-                at<cv::Vec3b>(i,j)[1] = 255 ;
-                at<cv::Vec3b>(i,j)[2] = 255 ;
+                (*this)(i,j)[0] = 255 ;
+                (*this)(i,j)[1] = 255 ;
+                (*this)(i,j)[2] = 255 ;
             }
         }
     }    
@@ -664,15 +715,15 @@ void Image::seuil_global( Option option )
         { 
             if( normes[i][j] < seuil )
             {
-                at<cv::Vec3b>(i,j)[0] = 0 ;
-                at<cv::Vec3b>(i,j)[1] = 0 ;
-                at<cv::Vec3b>(i,j)[2] = 0 ;
+                (*this)(i,j)[0] = 0 ;
+                (*this)(i,j)[1] = 0 ;
+                (*this)(i,j)[2] = 0 ;
             }
             else if(!option.keep_norme)
             {
-                at<cv::Vec3b>(i,j)[0] = 255 ;
-                at<cv::Vec3b>(i,j)[1] = 255 ;
-                at<cv::Vec3b>(i,j)[2] = 255 ;
+                (*this)(i,j)[0] = 255 ;
+                (*this)(i,j)[1] = 255 ;
+                (*this)(i,j)[2] = 255 ;
             }
         }
     } 
@@ -706,15 +757,15 @@ void Image::seuil_local( Option option )
 
             if( normes[i][j] < seuil )
             {
-                at<cv::Vec3b>(i,j)[0] = 0 ;
-                at<cv::Vec3b>(i,j)[1] = 0 ;
-                at<cv::Vec3b>(i,j)[2] = 0 ;
+                (*this)(i,j)[0] = 0 ;
+                (*this)(i,j)[1] = 0 ;
+                (*this)(i,j)[2] = 0 ;
             }
             else if(!option.keep_norme)
             {
-                at<cv::Vec3b>(i,j)[0] = 255 ;
-                at<cv::Vec3b>(i,j)[1] = 255 ;
-                at<cv::Vec3b>(i,j)[2] = 255 ;
+                (*this)(i,j)[0] = 255 ;
+                (*this)(i,j)[1] = 255 ;
+                (*this)(i,j)[2] = 255 ;
             }
         }
     } 
@@ -752,39 +803,39 @@ void Image::seuil_hysteresis( Option option)
             if( normes[i][j] > haut )
             {
                 if(!option.keep_norme){
-                    at<cv::Vec3b>(i,j)[0] = 255 ;
-                    at<cv::Vec3b>(i,j)[1] = 255 ;
-                    at<cv::Vec3b>(i,j)[2] = 255 ;
+                    (*this)(i,j)[0] = 255 ;
+                    (*this)(i,j)[1] = 255 ;
+                    (*this)(i,j)[2] = 255 ;
                 }
             }
             else if( normes[i][j] < bas )
             {
-                at<cv::Vec3b>(i,j)[0] = 0 ;
-                at<cv::Vec3b>(i,j)[1] = 0 ;
-                at<cv::Vec3b>(i,j)[2] = 0 ;
+                (*this)(i,j)[0] = 0 ;
+                (*this)(i,j)[1] = 0 ;
+                (*this)(i,j)[2] = 0 ;
             }
             else
             {
-                at<cv::Vec3b>(i,j)[0] = 0 ;
-                at<cv::Vec3b>(i,j)[1] = 0 ;
-                at<cv::Vec3b>(i,j)[2] = 0 ;
+                (*this)(i,j)[0] = 0 ;
+                (*this)(i,j)[1] = 0 ;
+                (*this)(i,j)[2] = 0 ;
                 for( unsigned int k = i-option.seuil_fenetre/2; k < i+option.seuil_fenetre/2 ; k++ )
                 {
                     for ( unsigned int l= j-option.seuil_fenetre/2; l < j+option.seuil_fenetre/2 ; l++ )
                     {
-                        if( at<cv::Vec3b>(k,l)[0] > haut ) //si un voisin a deja été validé comme contour
+                        if( (*this)(k,l)[0] > haut ) //si un voisin a deja été validé comme contour
                         {
                             if(option.keep_norme)
                             {
-                                at<cv::Vec3b>(i,j)[0] = normes[i][j] ;
-                                at<cv::Vec3b>(i,j)[1] = normes[i][j] ;
-                                at<cv::Vec3b>(i,j)[2] = normes[i][j] ;
+                                (*this)(i,j)[0] = normes[i][j] ;
+                                (*this)(i,j)[1] = normes[i][j] ;
+                                (*this)(i,j)[2] = normes[i][j] ;
                             }
                             else
                             {
-                                at<cv::Vec3b>(i,j)[0] = 255 ;
-                                at<cv::Vec3b>(i,j)[1] = 255 ;
-                                at<cv::Vec3b>(i,j)[2] = 255 ;
+                                (*this)(i,j)[0] = 255 ;
+                                (*this)(i,j)[1] = 255 ;
+                                (*this)(i,j)[2] = 255 ;
                             }
 
                             k = i+option.seuil_fenetre/2 ; //exit for loop
@@ -806,7 +857,7 @@ Image Image::affinage( const Option option )
     {
         for (int j = 1; j < cols-1; ++j)
         {
-            if( res.at<cv::Vec3b>(i,j)[0] != 0 )
+            if( res.is_contour(i,j) )
             {                
                 float dir = dirs[i][j] ;
                 int aI, aJ;
@@ -870,52 +921,146 @@ Image Image::affinage( const Option option )
                     bJ = -1 ;
                 } 
 
-                if(res.at<cv::Vec3b>(i+aI,j+aJ)[0] != 0 && res.at<cv::Vec3b>(i+bI,j+bJ)[0] != 0)
+                if( res.is_contour(i+aI,j+aJ) && res.is_contour(i+bI,j+bJ) )
                 {
-                    if(res.at<cv::Vec3b>(i,j)[0] >= res.at<cv::Vec3b>(i+aI,j+aJ)[0] && res.at<cv::Vec3b>(i,j)[0] > res.at<cv::Vec3b>(i+bI,j+bJ)[0])
+                    if( res.normes[i][j] >= res.normes[i+aI][j+aJ] && res.normes[i][j] >= res.normes[i+bI][j+bJ] )
                     {
-                        res.at<cv::Vec3b>(i+aI,j+aJ)[0] = 0;
-                        res.at<cv::Vec3b>(i+aI,j+aJ)[1] = 0;
-                        res.at<cv::Vec3b>(i+aI,j+aJ)[2] = 0;
-                        res.at<cv::Vec3b>(i+bI,j+bJ)[0] = 0;
-                        res.at<cv::Vec3b>(i+bI,j+bJ)[1] = 0;
-                        res.at<cv::Vec3b>(i+bI,j+bJ)[2] = 0;
+                        res(i+aI,j+aJ)[0] = 0;
+                        res(i+aI,j+aJ)[1] = 0;
+                        res(i+aI,j+aJ)[2] = 0;
+                        res(i+bI,j+bJ)[0] = 0;
+                        res(i+bI,j+bJ)[1] = 0;
+                        res(i+bI,j+bJ)[2] = 0;
                     }
                     else
                     {
-                        res.at<cv::Vec3b>(i,j)[0] = 0;
-                        res.at<cv::Vec3b>(i,j)[1] = 0;
-                        res.at<cv::Vec3b>(i,j)[2] = 0;
+                        res(i,j)[0] = 0;
+                        res(i,j)[1] = 0;
+                        res(i,j)[2] = 0;
                     }
                 }
-                else if(res.at<cv::Vec3b>(i+aI,j+aJ)[0] != 0)
+                else if( res.is_contour(i+aI,j+aJ) )
                 {
-                    if(res.at<cv::Vec3b>(i,j)[0] > res.at<cv::Vec3b>(i+aI,j+aJ)[0])
+                    if( res.normes[i][j] >= res.normes[i+aI][j+aJ] )
                     {
-                        res.at<cv::Vec3b>(i+aI,j+aJ)[0] = 0;
-                        res.at<cv::Vec3b>(i+aI,j+aJ)[1] = 0;
-                        res.at<cv::Vec3b>(i+aI,j+aJ)[2] = 0;
+                        res(i+aI,j+aJ)[0] = 0;
+                        res(i+aI,j+aJ)[1] = 0;
+                        res(i+aI,j+aJ)[2] = 0;
                     }
                     else
                     {
-                        res.at<cv::Vec3b>(i,j)[0] = 0;
-                        res.at<cv::Vec3b>(i,j)[1] = 0;
-                        res.at<cv::Vec3b>(i,j)[2] = 0;
+                        res(i,j)[0] = 0;
+                        res(i,j)[1] = 0;
+                        res(i,j)[2] = 0;
                     }
                 }
-                else if(res.at<cv::Vec3b>(i+bI,j+bJ)[0] != 0)
+                else if( res.is_contour(i+bI,j+bJ) )
                 {
-                    if(res.at<cv::Vec3b>(i,j)[0] > res.at<cv::Vec3b>(i+bI,j+bJ)[0])
+                    if( res.normes[i][j] >= res.normes[i+bI][j+bJ] )
                     {
-                        res.at<cv::Vec3b>(i+bI,j+bJ)[0] = 0;
-                        res.at<cv::Vec3b>(i+bI,j+bJ)[1] = 0;
-                        res.at<cv::Vec3b>(i+bI,j+bJ)[2] = 0;
+                        res(i+bI,j+bJ)[0] = 0;
+                        res(i+bI,j+bJ)[1] = 0;
+                        res(i+bI,j+bJ)[2] = 0;
                     }
                     else
                     {
-                        res.at<cv::Vec3b>(i,j)[0] = 0;
-                        res.at<cv::Vec3b>(i,j)[1] = 0;
-                        res.at<cv::Vec3b>(i,j)[2] = 0;
+                        res(i,j)[0] = 0;
+                        res(i,j)[1] = 0;
+                        res(i,j)[2] = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    for (int i = 1; i < rows-1; ++i)
+    {
+        for (int j = 1; j < cols-1; ++j)
+        {
+            if( !is_contour(i,j) )
+            {
+                float dir = dirs[i][j] ;
+                int aI, aJ;
+                int bI, bJ;
+
+                if( dir <= 1*45 )
+                {
+                    aI = 0 ;
+                    aJ = 1 ;
+                    bI = 0 ;
+                    bJ = -1 ;
+                }
+                else if( dir <= 2*45 )
+                {
+                    aI = -1;
+                    aJ = 1 ;
+                    bI = 1 ;
+                    bJ = -1 ;
+
+                }
+                else if( dir <= 3*45 )
+                {
+                    aI = -1 ;
+                    aJ = 0 ;
+                    bI = 1 ;
+                    bJ = 0 ;
+                }
+                else if( dir <= 4*45 )
+                {
+                    aI = -1 ;
+                    aJ = -1 ;
+                    bI = 1 ;
+                    bJ = 1 ;
+                }
+                else if( dir <= 5*45 )
+                {
+                    aI = 0 ;
+                    aJ = -1 ;
+                    bI = 0 ;
+                    bJ = 1 ;
+                }
+                else if( dir <= 6*45 )
+                {
+                    aI = 1 ;
+                    aJ = -1 ;
+                    bI = -1 ;
+                    bJ = 1 ;
+                }
+                else if( dir <= 7*45 )
+                {
+                    aI = 1 ;
+                    aJ = 0 ;
+                    bI = -1 ;
+                    bJ = 0 ;
+                }
+                else
+                {
+                    aI = 1 ;
+                    aJ = 1 ;
+                    bI = -1 ;
+                    bJ = -1 ;
+                } 
+
+                if( res.is_contour(i+aI,j+aJ) && res.is_contour(i+bI,j+bJ) )
+                {
+                    res(i+aI,j+aJ)[0] = 0;
+                    res(i+aI,j+aJ)[1] = 0;
+                    res(i+aI,j+aJ)[2] = 0;
+                    res(i+bI,j+bJ)[0] = 0;
+                    res(i+bI,j+bJ)[1] = 0;
+                    res(i+bI,j+bJ)[2] = 0;
+                   
+                    if(!option.keep_norme)
+                    {
+                        res(i,j)[0] = 255;
+                        res(i,j)[1] = 255;
+                        res(i,j)[2] = 255;
+                    }
+                    else
+                    {
+                        res(i,j)[0] = normes[i][j] ;
+                        res(i,j)[1] = normes[i][j] ;
+                        res(i,j)[2] = normes[i][j] ;
                     }
                 }
             }
@@ -937,7 +1082,7 @@ Image Image::fermeture( const Option option )
     {
         for (int j = 1; j < cols-1; ++j)
         {
-            if( res.at<cv::Vec3b>(i,j)[0] != 0 )
+            if( res.is_contour(i,j) )
             {       
                 int x = i ;
                 int y = j ;
@@ -951,7 +1096,7 @@ Image Image::fermeture( const Option option )
                     {
                         for (int l = y-1; l <= y+1; ++l)
                         {
-                            if( res.at<cv::Vec3b>(k,l)[0] != 0 && ( k!=x || l!=y ) )
+                            if( ( k!=x || l!=y ) && res.is_contour(k,l))
                             { 
                                 compteur_voisin++ ;
                                 voisinI = k ;
@@ -1055,7 +1200,7 @@ Image Image::fermeture( const Option option )
                             int pJ = oldY + k*dirJ ;
                             if( pI >=0 && pI < rows && pJ >=0 && pJ<cols)
                             {    
-                                if( res.at<cv::Vec3b>(pI,pJ)[0] == 0 && normes[pI][pJ] > option.fermeture_seuil && dirs[pI][pJ] == dirs[oldX][oldY] )
+                                if( !res.is_contour(pI,pJ) && normes[pI][pJ] > option.fermeture_seuil && dirs[pI][pJ] == dirs[oldX][oldY] )
                                 {
 
                                     for( unsigned int m = 1 ; m <= k ; m++)
@@ -1064,15 +1209,15 @@ Image Image::fermeture( const Option option )
                                         int mJ = oldY + m*dirJ ; 
                                         if( option.keep_norme )
                                         {
-                                            res.at<cv::Vec3b>(mI,mJ)[0] = normes[mI][mJ] ;
-                                            res.at<cv::Vec3b>(mI,mJ)[1] = normes[mI][mJ] ;
-                                            res.at<cv::Vec3b>(mI,mJ)[2] = normes[mI][mJ] ;
+                                            res(mI,mJ)[0] = normes[mI][mJ] ;
+                                            res(mI,mJ)[1] = normes[mI][mJ] ;
+                                            res(mI,mJ)[2] = normes[mI][mJ] ;
                                         }
                                         else
                                         {
-                                            res.at<cv::Vec3b>(mI,mJ)[0] = 255 ;
-                                            res.at<cv::Vec3b>(mI,mJ)[1] = 255 ;
-                                            res.at<cv::Vec3b>(mI,mJ)[2] = 255 ;
+                                            res(mI,mJ)[0] = 255 ;
+                                            res(mI,mJ)[1] = 255 ;
+                                            res(mI,mJ)[2] = 255 ;
                                         }
                                     }
 
@@ -1122,7 +1267,7 @@ Image Image::color_direction( const Option option )
     {
         for (int j = 0; j < cols; ++j)
         {
-            if( at<cv::Vec3b>(i,j)[0] != 0 )
+            if( is_contour(i,j) )
             {                
                 float dir = dirs[i][j] ;
 
@@ -1130,94 +1275,126 @@ Image Image::color_direction( const Option option )
                 {
                     if( !option.keep_norme )
                     {
-                        res.at<cv::Vec3b>(i,j)[2] = 255 ;
-                        res.at<cv::Vec3b>(i,j)[0] = 255 ;
+                        res(i,j)[2] = 255 ;
+                        res(i,j)[0] = 255 ;
                     }                    
-                    res.at<cv::Vec3b>(i,j)[1] = 0 ;
+                    res(i,j)[1] = 0 ;
                 }
                 else if( dir <= 2*45 ) //bleu
                 {
-                    res.at<cv::Vec3b>(i,j)[2] = 0 ;
-                    res.at<cv::Vec3b>(i,j)[1] = 0 ;
+                    res(i,j)[2] = 0 ;
+                    res(i,j)[1] = 0 ;
                     if( !option.keep_norme )
                     {
-                        res.at<cv::Vec3b>(i,j)[0] = 255 ;
+                        res(i,j)[0] = 255 ;
                     } 
                 }
                 else if( dir <= 3*45 ) //vert
                 {
-                    res.at<cv::Vec3b>(i,j)[2] = 0 ;
-                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
+                    res(i,j)[2] = 0 ;
+                    res(i,j)[0] = 0 ;
                     if( !option.keep_norme )
                     {
-                        res.at<cv::Vec3b>(i,j)[1] = 255 ;
+                        res(i,j)[1] = 255 ;
                     } 
                 }
                 else if( dir <= 4*45 ) //jaune
                 {
                     if( !option.keep_norme )
                     {
-                        res.at<cv::Vec3b>(i,j)[2] = 255 ;
-                        res.at<cv::Vec3b>(i,j)[1] = 255 ;
+                        res(i,j)[2] = 255 ;
+                        res(i,j)[1] = 255 ;
                     }
-                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
+                    res(i,j)[0] = 0 ;
                 }
                 else if( dir <= 5*45 ) //orange
                 {
                     if( !option.keep_norme )
                     {
-                        res.at<cv::Vec3b>(i,j)[2] = 255 ;
-                        res.at<cv::Vec3b>(i,j)[1] = 128 ;
+                        res(i,j)[2] = 255 ;
+                        res(i,j)[1] = 128 ;
                     }
                     else
                     {
-                        res.at<cv::Vec3b>(i,j)[2] = res.at<cv::Vec3b>(i,j)[2] ;
-                        res.at<cv::Vec3b>(i,j)[1] = res.at<cv::Vec3b>(i,j)[1]/2 ;
+                        res(i,j)[2] = res(i,j)[2] ;
+                        res(i,j)[1] = res(i,j)[1]/2 ;
                     }
                     
-                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
+                    res(i,j)[0] = 0 ;
                 }
                 else if( dir <= 6*45 ) //rose
                 {
                     if( !option.keep_norme )
                     {
-                        res.at<cv::Vec3b>(i,j)[2] = 255 ;
-                        res.at<cv::Vec3b>(i,j)[0] = 128 ;
+                        res(i,j)[2] = 255 ;
+                        res(i,j)[0] = 128 ;
                     }
                     else
                     {
-                        res.at<cv::Vec3b>(i,j)[2] = res.at<cv::Vec3b>(i,j)[2] ;
-                        res.at<cv::Vec3b>(i,j)[0] = res.at<cv::Vec3b>(i,j)[0]/2 ;
+                        res(i,j)[2] = res(i,j)[2] ;
+                        res(i,j)[0] = res(i,j)[0]/2 ;
                     }
-                    res.at<cv::Vec3b>(i,j)[1] = 0 ;
+                    res(i,j)[1] = 0 ;
                     
                 }
                 else if( dir <= 7*45 ) //rouge
                 {
                     if( !option.keep_norme )
                     {
-                        res.at<cv::Vec3b>(i,j)[2] = 255 ;
+                        res(i,j)[2] = 255 ;
                     }
-                    res.at<cv::Vec3b>(i,j)[1] = 0 ;
-                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
+                    res(i,j)[1] = 0 ;
+                    res(i,j)[0] = 0 ;
                 }
                 else //marron
                 {
                     if( !option.keep_norme )
                     {
-                        res.at<cv::Vec3b>(i,j)[2] = 128 ;
-                        res.at<cv::Vec3b>(i,j)[1] = 64 ;
+                        res(i,j)[2] = 128 ;
+                        res(i,j)[1] = 64 ;
                     }
                     else
                     {
-                        res.at<cv::Vec3b>(i,j)[2] = res.at<cv::Vec3b>(i,j)[2]/2 ;
-                        res.at<cv::Vec3b>(i,j)[1] = res.at<cv::Vec3b>(i,j)[1]/4 ;
+                        res(i,j)[2] = res(i,j)[2]/2 ;
+                        res(i,j)[1] = res(i,j)[1]/4 ;
                     }
-                    res.at<cv::Vec3b>(i,j)[0] = 0 ;
+                    res(i,j)[0] = 0 ;
                 }     
             }
         }
     }
+
+    return res ;
+}
+
+
+
+/*************************************************************
+**************************************************************
+
+                        HOUGH
+
+**************************************************************
+*************************************************************/
+
+
+
+
+Image Image::hough_transform( const Option option, Image& origin )
+{
+    Image temp ;
+    Image res = origin.clone() ;
+
+    if( option.hough_calcul_edge ){
+        temp = detection_contour( option ) ;
+    }else{
+        temp = clone() ;
+    }
+
+    if( option.hough_type == DROITE || option.hough_type == BOTH)
+        hough_lines( temp, res, option.hough_seuil_lines, option.hough_precis ) ;
+    if( option.hough_type == CERCLE || option.hough_type == BOTH)
+        hough_circles( temp, res, option.hough_seuil_circles, option.hough_rayon_min, option.hough_rayon_max, option.hough_distance_min, option.hough_affiche_acc ) ;
 
     return res ;
 }

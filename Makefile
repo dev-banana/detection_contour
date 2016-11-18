@@ -30,7 +30,7 @@ OBJ := $(addprefix $(OBJ_DIR)/,$(notdir $(SRCS:.cpp=.o)))
 
 #*******
 
-CPPFLAGS = -g -Wall -std=c++11
+CPPFLAGS = -g -Wall -std=c++11 -fopenmp
 
 LIB_DIR = -L/usr/include/
 LIBS = -L/usr/local/lib -fopenmp -lglib-2.0 -lopencv_shape -lopencv_stitching -lopencv_objdetect -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_video -lopencv_photo -lopencv_ml -lopencv_imgproc -lopencv_flann -lopencv_core
