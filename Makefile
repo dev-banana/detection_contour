@@ -1,6 +1,3 @@
-MODE = "GUI"
-
-
 PROGRAM = analysis
 
 BIN_DIR = bin
@@ -8,7 +5,7 @@ OBJ_DIR = obj
 INCLUDE_DIR = -I/usr/include/ -I./inc
 
 
-SRC_DIR = src/gui
+SRC_DIR = src
 PACKAGES= opencv glibmm-2.4 glib-2.0 gtkmm-3.0 gtk+-3.0 gdkmm-3.0
 
 
