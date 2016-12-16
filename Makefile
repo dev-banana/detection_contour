@@ -1,10 +1,4 @@
-ARG = ${MODE}
-
-ifeq ($(ARG), "CLI")
-	MODE = "CLI"
-else
-	MODE = "GUI"
-endif
+MODE = "GUI"
 
 
 PROGRAM = analysis
@@ -14,13 +8,8 @@ OBJ_DIR = obj
 INCLUDE_DIR = -I/usr/include/ -I./inc
 
 
-ifeq ($(MODE), "GUI")
-	SRC_DIR = src/gui
-	PACKAGES= opencv glibmm-2.4 glib-2.0 gtkmm-3.0 gtk+-3.0 gdkmm-3.0
-else
-	SRC_DIR = src/cli
-	PACKAGES= opencv
-endif
+SRC_DIR = src/gui
+PACKAGES= opencv glibmm-2.4 glib-2.0 gtkmm-3.0 gtk+-3.0 gdkmm-3.0
 
 
 #*******

@@ -23,26 +23,6 @@ Pour compiler et lancer le programme :
 
 	make run
 
-______________________
-
-
-CLI - *mode console*
-------
-*( si probleme de compatibilité avec glib/gtk )*
-
-
-Pour compiler :
-
-	make MODE="CLI"
-
-Pour compiler et lancer le programme :
-
-	make MODE="CLI" run
-
-
-*En mode console, les options ne sont pas dynamiques mais peuvent être modifiées facilement en choisissant les nouvelles valeurs parmis celles en commentaires dans le constructeur de la classe Option, dans le fichier :*
-
-	src/cli/option.cpp  
 
 ______________________
 

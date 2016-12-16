@@ -117,7 +117,7 @@ void hough_lines( Image input, Image output, unsigned int seuil, bool precision 
     for(it=lines.begin();it!=lines.end();it++)  
     {  
 
-        if( precision )
+        if( precision ) //points par points
         {
             cv::LineIterator it2(output, it->first, it->second, 8) ;
             for(int i = 0; i < it2.count; i++, ++it2)
